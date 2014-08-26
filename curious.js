@@ -78,13 +78,13 @@ var CuriousClient = (function() {
     return objects;
   }
 
-  function _dict_to_array(d) {
+  function dict_to_array(d) {
     var r = [];
     for (var k in d) { r.push(d[k]); }
     return r;
   }
 
-  function _array_to_dict(a) {
+  function array_to_dict(a) {
     var d = {};
     for (var i=0; i<a.length; i++) {
       d[a[i].id] = a[i];
