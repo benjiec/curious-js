@@ -95,8 +95,7 @@ var CuriousClient = (function() {
   return {
     parse: parse_results,
     d2a: dict_to_array,
-    a2d: array_to_dict,
-    query: query
+    a2d: array_to_dict
   }
 
 }());
