@@ -1,0 +1,10 @@
+{
+  "name": "curious-js",
+  "version": "0.0.1",
+  "main": [
+    "./curious.js"
+  ],
+  "ignore": [ "**/**" ],
+  "dependencies": {
+  }
+}
