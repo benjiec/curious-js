@@ -95,10 +95,18 @@ var CuriousObjects = (function() {
     return d;
   }
 
+  function id_list(objects) {
+    var ids = [];
+    for (var i=0; i<objects.length; i++) { ids.push(objects[i].id); }
+    if (ids.length === 0) { return; }
+    return _.uniq(ids).join(',');
+  }
+
   return {
     parse: parse_results,
     d2a: dict_to_array,
-    a2d: array_to_dict
+    a2d: array_to_dict,
+    id_list: id_list
   }
 
 }());
