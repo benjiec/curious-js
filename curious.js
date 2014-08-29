@@ -132,12 +132,19 @@ var CuriousQ = function(curious_url, http) {
   }
 
   function get(q, relationships, cb) { __get(q, null, relationships, null, cb); }
-  function get_with_existing_objects(q, relationships, existing_object_arrays, cb) {
+  function get_with_objs(q, relationships, existing_object_arrays, cb) {
+    __get(q, null, relationships, existing_object_arrays, cb);
+  }
+  function get_with_start(q, relationships, starting_objects, cb) {
+    var existing_object_arrays = [];
+    _.map(relationships, function(x) { existing_object_arrays.push(null); })
+    existing_object_arrays[0] = starting_objects;
     __get(q, null, relationships, existing_object_arrays, cb);
   }
 
   return {
     get: get,
-    get_with_objs: get_with_existing_objects
+    get_with_objs: get_with_objs,
+    get_with_start: get_with_start
   }
 };

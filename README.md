@@ -35,3 +35,16 @@ app.factory('curiousClient', function($http) { return CuriousQ(CURIOUS_URL, $htt
 Then in your controller, with ```curiousClient``` injected, you can call
 
 ```curiousClient.get(...)```
+
+Other helpers:
+
+```
+var clt = CuriousQ(CURIOUS_URL, $http);
+
+// pass in an array of existing object arrays, one object array for each
+// relationship. relationships will be added to existing objects.
+clt.get_with_objs(query, relationships, existing_object_arrays, cb);
+
+// pass in an array of existing objects corresponding to the first relationships.
+clt.get_with_start(query, relationships, starting_object_arrays, cb);
+```
