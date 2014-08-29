@@ -98,7 +98,7 @@ var CuriousObjects = (function() {
   function id_list(objects) {
     var ids = [];
     for (var i=0; i<objects.length; i++) { ids.push(objects[i].id); }
-    if (ids.length === 0) { return; }
+    if (ids.length === 0) { return null; }
     return _.uniq(ids).join(',');
   }
 
