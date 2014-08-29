@@ -98,15 +98,21 @@ var CuriousObjects = (function() {
   function id_list(objects) {
     var ids = [];
     for (var i=0; i<objects.length; i++) { ids.push(objects[i].id); }
+    return _.uniq(ids);
+  }
+
+  function id_str(objects) {
+    var ids = id_list(objects);
     if (ids.length === 0) { return null; }
-    return _.uniq(ids).join(',');
+    return ids.join(',');
   }
 
   return {
     parse: parse_results,
     d2a: dict_to_array,
     a2d: array_to_dict,
-    id_list: id_list
+    id_list: id_list,
+    id_str: id_str
   }
 
 }());
@@ -122,7 +128,8 @@ var CuriousQ = function(curious_url, http) {
     var existing_object_dicts = undefined;
     if (existing_object_arrays) {
       existing_object_dicts = _.map(existing_object_arrays, function(data_array) {
-        return CuriousObjects.a2d(data_array);
+        if (data_array) { return CuriousObjects.a2d(data_array); }
+        else { return null; }
       });
     }
 
