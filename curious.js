@@ -1,7 +1,7 @@
 // Curious client-side JSON parsing
 //
 
-var CuriousClient = (function() {
+var CuriousObjects = (function() {
   function CuriousObject(hash_data, url) {
     this.id = hash_data.id;
     for (var k in hash_data) {
@@ -25,19 +25,22 @@ var CuriousClient = (function() {
     return objects;
   }
 
-  function parse_results(relationships, results, init_objects) {
-    // get objects associated with each subquery. for each subquery, build a hash
-    // of ID to object.
+  function parse_results(relationships, results, existing_object_dicts) {
+    // get objects associated with each subquery. for each subquery, build a
+    // hash of ID to object. existing_object_dicts should be an array of dicts,
+    // each dict is a mapping of ID to existing objects. if existing objects
+    // are specified, will build relationships using existing objects.
+
     var objects = [];
 
     for (var i=0; i<results.data.length; i++) {
       var result_objects = parse_objects(results.data[i]);
       var d = {};
       for (var j=0; j<result_objects.length; j++) {
-        if (init_objects !== undefined && init_objects !== null &&
-            init_objects[i] !== undefined && init_objects[i] !== null &&
-            init_objects[i][result_objects[j].id] !== undefined) {
-          d[result_objects[j].id] = init_objects[i][result_objects[j].id];
+        if (existing_object_dicts !== undefined && existing_object_dicts !== null &&
+            existing_object_dicts[i] !== undefined && existing_object_dicts[i] !== null &&
+            existing_object_dicts[i][result_objects[j].id] !== undefined) {
+          d[result_objects[j].id] = existing_object_dicts[i][result_objects[j].id];
         }
         else {
           d[result_objects[j].id] = result_objects[j];
@@ -99,3 +102,42 @@ var CuriousClient = (function() {
   }
 
 }());
+
+
+// Helper for making a Curious query and getting back parsed objects. Use with
+// angular $http compatible HTTP request facilities (e.g. jQuery?)
+
+var CuriousQ = function(curious_url, http) {
+  function __get(q, params, relationships, existing_object_arrays, cb) {
+    console.log(q);
+
+    var existing_object_dicts = undefined;
+    if (existing_object_arrays) {
+      existing_object_dicts = _.map(existing_object_arrays, function(data_array) {
+        return CuriousObjects.a2d(data_array);
+      });
+    }
+
+    var args = {d: 1, x: 1, fk: 0, q: q};
+    if (params) {
+      for (var k in params) { if (args[k] === undefined) { args[k] = params[k]; } }
+    }
+
+    http.post(curious_url, args).success(function(resp) {
+      var objects = CuriousObjects.parse(relationships, resp.result, existing_object_dicts);
+      for (var i=0; i<objects.length; i++) { objects[i] = CuriousObjects.d2a(objects[i]); }
+      // console.log(objects);
+      cb(objects);
+    });
+  }
+
+  function get(q, relationships, cb) { __get(q, null, relationships, null, cb); }
+  function get_with_existing_objects(q, relationships, existing_object_arrays, cb) {
+    __get(q, null, relationships, existing_object_arrays, cb);
+  }
+
+  return {
+    get: get,
+    get_with_objs: get_with_existing_objects
+  }
+};
