@@ -133,8 +133,8 @@ var CuriousQ = function(curious_url, http) {
       });
     }
 
-    var args = {fk: 0, q: q};
-    var overwrite_args = {d: 1, x: 1};
+    var args = {d: 1, fk: 0, q: q};
+    var overwrite_args = {x: 1};
 
     if (params) {
       for (var k in params) {
