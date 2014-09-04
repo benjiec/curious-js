@@ -133,9 +133,16 @@ var CuriousQ = function(curious_url, http) {
       });
     }
 
-    var args = {d: 1, x: 1, fk: 0, q: q};
+    var args = {fk: 0, q: q};
+    var overwrite_args = {d: 1, x: 1};
+
     if (params) {
-      for (var k in params) { if (args[k] === undefined) { args[k] = params[k]; } }
+      for (var k in params) {
+        if (args[k] === undefined) { args[k] = params[k]; }
+      }
+    }
+    for (var k in overwrite_args) {
+      if (args[k] === undefined) { args[k] = overwrite_args[k]; }
     }
 
     http.post(curious_url, args).success(function(resp) {
@@ -146,15 +153,15 @@ var CuriousQ = function(curious_url, http) {
     });
   }
 
-  function get(q, relationships, cb) { __get(q, null, relationships, null, cb); }
-  function get_with_objs(q, relationships, existing_object_arrays, cb) {
-    __get(q, null, relationships, existing_object_arrays, cb);
+  function get(q, relationships, cb, params) { __get(q, params, relationships, null, cb); }
+  function get_with_objs(q, relationships, existing_object_arrays, cb, params) {
+    __get(q, params, relationships, existing_object_arrays, cb);
   }
-  function get_with_start(q, relationships, starting_objects, cb) {
+  function get_with_start(q, relationships, starting_objects, cb, params) {
     var existing_object_arrays = [];
     _.map(relationships, function(x) { existing_object_arrays.push(null); })
     existing_object_arrays[0] = starting_objects;
-    __get(q, null, relationships, existing_object_arrays, cb);
+    __get(q, params, relationships, existing_object_arrays, cb);
   }
 
   return {
