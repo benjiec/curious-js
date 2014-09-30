@@ -1,7 +1,13 @@
 // Curious client-side JSON parsing
 //
 
-var CuriousObjects = (function() {
+var ex = undefined;
+if (typeof window !== 'undefined') { ex = window; }
+else if (typeof exports !== 'undefined' && exports) {
+  ex = exports;
+}
+
+ex.CuriousObjects = (function() {
   function CuriousObject(hash_data, url) {
     this.id = hash_data.id;
     for (var k in hash_data) {
@@ -125,7 +131,7 @@ var CuriousObjects = (function() {
 // Helper for making a Curious query and getting back parsed objects. Use with
 // angular $http compatible HTTP request facilities (e.g. jQuery?)
 
-var CuriousQ = function(curious_url, http) {
+ex.CuriousQ = function(curious_url, http) {
   function __get(q, params, relationships, existing_object_arrays, cb) {
     console.log(q);
 
