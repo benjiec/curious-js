@@ -131,7 +131,9 @@ ex.CuriousObjects = (function() {
 // Helper for making a Curious query and getting back parsed objects. Use with
 // angular $http compatible HTTP request facilities (e.g. jQuery?)
 
-ex.CuriousQ = function(curious_url, http) {
+ex.CuriousQ = function(curious_url, http, node_requests, ns) {
+  if (!ns && typeof window !== 'undefined') { ns = window; }
+
   function __get(q, params, relationships, existing_object_arrays, cb) {
     console.log(q);
 
@@ -141,7 +143,7 @@ ex.CuriousQ = function(curious_url, http) {
       for (var i=0; i<existing_object_arrays.length; i++) {
         var data_array = existing_object_arrays[i];
         if (data_array) {
-          existing_object_dicts.push(CuriousObjects.a2d(data_array));
+          existing_object_dicts.push(ns.CuriousObjects.a2d(data_array));
         }
         else {
           existing_object_dicts.push(null);
@@ -161,12 +163,22 @@ ex.CuriousQ = function(curious_url, http) {
       if (args[k] === undefined) { args[k] = overwrite_args[k]; }
     }
 
-    http.post(curious_url, args).success(function(resp) {
-      var objects = CuriousObjects.parse(relationships, resp.result, existing_object_dicts);
-      for (var i=0; i<objects.length; i++) { objects[i] = CuriousObjects.d2a(objects[i]); }
+    var post_cb = function(resp) {
+      var objects = ns.CuriousObjects.parse(relationships, resp.result, existing_object_dicts);
+      for (var i=0; i<objects.length; i++) { objects[i] = ns.CuriousObjects.d2a(objects[i]); }
       // console.log(objects);
       cb(objects);
-    });
+    };
+
+    if (node_requests) {
+      http.post({url: curious_url, body: JSON.stringify(args)}, function(error, response, body) {
+        var resp = JSON.parse(body);
+        post_cb(resp);
+      });
+    }
+    else {
+      http.post(curious_url, args).success(post_cb);
+    }
   }
 
   function get(q, relationships, cb, params) { __get(q, params, relationships, null, cb); }
