@@ -97,8 +97,12 @@ var CuriousObjects = (function() {
 
   function id_list(objects) {
     var ids = [];
-    for (var i=0; i<objects.length; i++) { ids.push(objects[i].id); }
-    return _.uniq(ids);
+    for (var i=0; i<objects.length; i++) {
+      if (ids.indexOf(objects[i].id) < 0) {
+        ids.push(objects[i].id);
+      }
+    }
+    return ids;
   }
 
   function id_str(objects) {
@@ -127,10 +131,16 @@ var CuriousQ = function(curious_url, http) {
 
     var existing_object_dicts = undefined;
     if (existing_object_arrays) {
-      existing_object_dicts = _.map(existing_object_arrays, function(data_array) {
-        if (data_array) { return CuriousObjects.a2d(data_array); }
-        else { return null; }
-      });
+      existing_object_dicts = [];
+      for (var i=0; i<existing_object_arrays.length; i++) {
+        var data_array = existing_object_arrays[i];
+        if (data_array) {
+          existing_object_dicts.push(CuriousObjects.a2d(data_array));
+        }
+        else {
+          existing_object_dicts.push(null);
+        }
+      }
     }
 
     var args = {d: 1, fk: 0, q: q};
@@ -159,7 +169,9 @@ var CuriousQ = function(curious_url, http) {
   }
   function get_with_start(q, relationships, starting_objects, cb, params) {
     var existing_object_arrays = [];
-    _.map(relationships, function(x) { existing_object_arrays.push(null); })
+    for (var i=0; i<relationships.length; i++) {
+      existing_object_arrays.push(null);
+    }
     existing_object_arrays[0] = starting_objects;
     __get(q, params, relationships, existing_object_arrays, cb);
   }
