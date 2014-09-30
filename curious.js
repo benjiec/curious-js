@@ -152,7 +152,7 @@ ex.CuriousQ = function(curious_url, http, node_requests, ns) {
     }
 
     var args = {d: 1, fk: 0, q: q};
-    var overwrite_args = {x: 1};
+    var overwrite_args = {x: 0};
 
     if (params) {
       for (var k in params) {
