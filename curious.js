@@ -130,7 +130,7 @@
   var CuriousQ = function(curious_url, http) {
 
     function __get(q, params, relationships, existing_object_arrays, cb) {
-      console.log(q);
+      console.warn(q);
 
       var existing_object_dicts = undefined;
       if (existing_object_arrays) {
@@ -161,7 +161,6 @@
       var post_cb = function(resp) {
         var objects = CuriousObjects.parse(relationships, resp.result, existing_object_dicts);
         for (var i=0; i<objects.length; i++) { objects[i] = CuriousObjects.d2a(objects[i]); }
-        // console.log(objects);
         cb(objects);
       };
 
