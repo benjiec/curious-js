@@ -27,13 +27,14 @@
       return objects;
     }
 
-    function parse_results(relationships, results, existing_object_dicts) {
+    function parse_results_with_trees(relationships, results, existing_object_dicts) {
       // get objects associated with each subquery. for each subquery, build a
       // hash of ID to object. existing_object_dicts should be an array of dicts,
       // each dict is a mapping of ID to existing objects. if existing objects
       // are specified, will build relationships using existing objects.
   
       var objects = [];
+      var trees = [];
 
       for (var i=0; i<results.data.length; i++) {
         var result_objects = parse_objects(results.data[i]);
@@ -49,6 +50,7 @@
           }
         }
         objects.push(d);
+        trees.push(null);
       }
 
       // for each subquery, add a relationship to results of next subquery, and
@@ -61,6 +63,7 @@
         var join_src = objects[join_idx];
         var join_obj = objects[i];
         var rev = relationships[join_idx];
+        trees[i] = results.results[i].tree;
 
         // add empty replationship
         for (var k in join_src) { join_src[k][rel] = []; }
@@ -80,7 +83,11 @@
         }
       }
 
-      return objects;
+      return {objects: objects, trees: trees};
+    }
+
+    function parse_results(relationships, results, existing_object_dicts) {
+      return parse_results_with_trees(relationships, results, existing_object_dicts).objects;
     }
 
     function dict_to_array(d) {
@@ -115,6 +122,7 @@
 
     return {
       parse: parse_results,
+      parse_with_trees: parse_results_with_trees,
       d2a: dict_to_array,
       a2d: array_to_dict,
       id_list: id_list,
@@ -129,7 +137,7 @@
 
   var CuriousQ = function(curious_url, http, app_default_params) {
 
-    function __get(q, params, relationships, existing_object_arrays, cb) {
+    function __get(q, params, relationships, existing_object_arrays, cb, trees_cb) {
       console.warn(q);
 
       var existing_object_dicts = undefined;
@@ -164,25 +172,27 @@
       }
 
       var post_cb = function(resp) {
-        var objects = CuriousObjects.parse(relationships, resp.result, existing_object_dicts);
+        var res = CuriousObjects.parse_with_trees(relationships, resp.result, existing_object_dicts);
+        var objects = res.objects;
         for (var i=0; i<objects.length; i++) { objects[i] = CuriousObjects.d2a(objects[i]); }
         cb(objects);
+        if (trees_cb) { trees_cb(res.trees); }
       };
 
       http.post(curious_url, args).success(post_cb);
     }
 
-    function get(q, relationships, cb, params) { __get(q, params, relationships, null, cb); }
-    function get_with_objs(q, relationships, existing_object_arrays, cb, params) {
-      __get(q, params, relationships, existing_object_arrays, cb);
+    function get(q, relationships, cb, params, tree_cb) { __get(q, params, relationships, null, cb, tree_cb); }
+    function get_with_objs(q, relationships, existing_object_arrays, cb, params, tree_cb) {
+      __get(q, params, relationships, existing_object_arrays, cb, tree_cb);
     }
-    function get_with_start(q, relationships, starting_objects, cb, params) {
+    function get_with_start(q, relationships, starting_objects, cb, params, tree_cb) {
       var existing_object_arrays = [];
       for (var i=0; i<relationships.length; i++) {
         existing_object_arrays.push(null);
       }
       existing_object_arrays[0] = starting_objects;
-      __get(q, params, relationships, existing_object_arrays, cb);
+      __get(q, params, relationships, existing_object_arrays, cb, tree_cb);
     }
 
     return {
