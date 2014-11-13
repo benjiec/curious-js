@@ -135,10 +135,11 @@
   // Helper for making a Curious query and getting back parsed objects. Use with
   // angular $http compatible HTTP request facilities (e.g. jQuery?)
 
-  var CuriousQ = function(curious_url, http, app_default_params) {
+  var CuriousQ = function(curious_url, http, app_default_params, quiet) {
 
     function __get(q, params, relationships, existing_object_arrays, cb, trees_cb) {
-      console.warn(q);
+      if (quiet === undefined || quiet !== true)
+        console.warn(q);
 
       var existing_object_dicts = undefined;
       if (existing_object_arrays) {
