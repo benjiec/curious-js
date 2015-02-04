@@ -4,15 +4,16 @@
 (function(){
 
   var CuriousObjects = (function() {
-    function CuriousObject(hash_data, url) {
+    function CuriousObject(hash_data, url, model) {
       this.id = hash_data.id;
       for (var k in hash_data) {
         this[k] = hash_data[k];
       }
       this.__url = url;
+      this.__model = model;
     }
 
-    function parse_objects(data) {
+    function parse_objects(data, model) {
       if (data.objects === undefined) { return []; }
       var objects = [];
       for (var i=0; i<data.objects.length; i++) {
@@ -22,7 +23,7 @@
         for (var j=0; j<data.fields.length; j++) {
           obj_data[data.fields[j]] = obj[j];
         }
-        objects.push(new CuriousObject(obj_data, url));
+        objects.push(new CuriousObject(obj_data, url, model));
       }
       return objects;
     }
@@ -37,7 +38,8 @@
       var trees = [];
 
       for (var i=0; i<results.data.length; i++) {
-        var result_objects = parse_objects(results.data[i]);
+        var model = results.results[i].model;
+        var result_objects = parse_objects(results.data[i], model);
         var d = {};
         for (var j=0; j<result_objects.length; j++) {
           if (existing_object_dicts !== undefined && existing_object_dicts !== null &&
