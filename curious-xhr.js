@@ -123,5 +123,5 @@ var ex = undefined;
 if (typeof window !== 'undefined') { ex = window; }
 else if (typeof exports !== 'undefined' && exports) { ex = exports; }
 
-ex.CuriousXhr = CuriousXhr;
+ex.CuriousXhr = CuriousXhr();
 })();
