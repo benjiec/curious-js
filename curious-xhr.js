@@ -88,7 +88,7 @@ XHR.prototype = {
   }
 };
 
-function CuriousXhr(server) {
+function CuriousXhr() {
   var xhr = new XHR();
   var post = function (url, data) {
     // create a new scope with its own "success_cb"
