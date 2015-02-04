@@ -116,7 +116,7 @@ function CuriousXhr(server) {
     })();
   }
 
-  return curious.CuriousQ(server, {post: post});
+  return {post: post};
 }
 
 var ex = undefined;
