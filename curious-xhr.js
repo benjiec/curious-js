@@ -90,14 +90,15 @@ XHR.prototype = {
 
 function CuriousXhr() {
   var xhr = new XHR();
-  var post = function (url, data) {
+  var post = function (url, data, params) {
     // create a new scope with its own "success_cb"
     return (function() {
       var success_cb = null;
         
       xhr.request({
         url: url,
-        body: JSON.stringify(data),
+        body: data ? JSON.stringify(data) : null,
+        params: params,
         method: 'POST',
         callback: function(response, xhr) {
           if (success_cb) {
