@@ -90,7 +90,7 @@ XHR.prototype = {
 
 function CuriousXhr() {
   var xhr = new XHR();
-  var post = function (url, data, params) {
+  var post = function (url, data, params, content_type) {
     // create a new scope with its own "success_cb"
     return (function() {
       var success_cb = null;
@@ -100,6 +100,7 @@ function CuriousXhr() {
         body: data ? JSON.stringify(data) : null,
         params: params,
         method: 'POST',
+        headers: { 'Content-Type': content_type ? content_type : 'text/plain' },
         callback: function(response, xhr) {
           if (success_cb) {
             var r = JSON.parse(xhr.responseText);
