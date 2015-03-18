@@ -43,6 +43,7 @@ XHR.prototype = {
     }
     this.makeReadyStateHandler(xhr, options.callback);
     this.setRequestHeaders(xhr, options.headers);
+    this.setRequestHeaders(xhr, {'X-Requested-With': 'XMLHttpRequest'});
     xhr.send(xhrParams);
     if (!async) {
       xhr.onreadystatechange(xhr);
