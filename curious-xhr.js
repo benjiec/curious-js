@@ -91,35 +91,59 @@ XHR.prototype = {
 
 function CuriousXhr() {
   var xhr = new XHR();
-  var post = function (url, data, params, content_type) {
-    // create a new scope with its own "success_cb"
-    return (function() {
-      var success_cb = null;
-        
-      xhr.request({
-        url: url,
-        body: data ? JSON.stringify(data) : null,
-        params: params,
-        method: 'POST',
-        headers: { 'Content-Type': content_type ? content_type : 'text/plain' },
-        callback: function(response, xhr) {
+
+  // create a new scope with its own "success_cb"
+  function _request(url, data, params, content_type, method) {
+    var success_cb = null;
+    var error_cb = null;
+
+    xhr.request({
+      url: url,
+      body: (method === 'POST' && data) ? JSON.stringify(data) : null,
+      params: params,
+      method: method,
+      headers: { 'Content-Type': content_type ? content_type : 'text/plain' },
+      callback: function(response, xhr) {
+        if (xhr.status >= 200 && xhr.status < 300) {
           if (success_cb) {
             var r = JSON.parse(xhr.responseText);
             success_cb(r);
           }
         }
-      });
-
-      function success(cb) {
-        success_cb = cb;
-        return this;
+        else {
+          if (error_cb)
+            error_cb();
+        }
       }
+    });
 
-      return { success: success };
-    })();
+    function success(cb) {
+      success_cb = cb;
+      return this;
+    }
+
+    function error(cb) {
+      error_cb = cb;
+      return this;
+    }
+
+    return { success: success, error: error };
   }
 
-  return {post: post};
+  function post(url, data, params, content_type) {
+    var x = _request(url, data, params, content_type, 'POST');
+    return x;
+  }
+
+  function get(url, data, params, content_type) {
+    var x = _request(url, data, params, content_type, 'GET');
+    return x;
+  }
+
+  return {
+    post: post,
+    get: get
+  };
 }
 
 var ex = undefined;
