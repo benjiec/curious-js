@@ -111,8 +111,16 @@ function CuriousXhr() {
           }
         }
         else {
-          if (error_cb)
-            error_cb();
+          if (error_cb) {
+            var r = null;
+            try {
+              r = JSON.parse(xhr.responseText);
+            }
+            catch(e) {
+              r = xhr.responseText;
+            }
+            error_cb(r);
+          }
         }
       }
     });
