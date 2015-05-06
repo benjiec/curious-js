@@ -3,17 +3,34 @@
 
 (function(){
 
+  var CuriousQuery = function() {
+    this.terms = [];
+    this.relationships = [];
+    this.classes = [];
+  };
+
+  CuriousQuery.prototype = {
+    query: function() { return this.terms.join(' '); },
+    add: function(term, relationship, klass) {
+      this.terms.push(term);
+      this.relationships.push(relationship);
+      this.classes.push(klass);
+      return this;
+    },
+  };
+
   var CuriousObjects = (function() {
-    function CuriousObject(hash_data, url, model) {
+    function CuriousObject(hash_data) {
       this.id = hash_data.id;
       for (var k in hash_data) {
         this[k] = hash_data[k];
       }
-      this.__url = url;
-      this.__model = model;
+      this.__url = null;
+      this.__model = null;
+      this.__dirty = false;
     }
 
-    function parse_objects(data, model) {
+    function parse_objects(data, model, klass) {
       if (data.objects === undefined) { return []; }
       var objects = [];
       for (var i=0; i<data.objects.length; i++) {
@@ -23,12 +40,22 @@
         for (var j=0; j<data.fields.length; j++) {
           obj_data[data.fields[j]] = obj[j];
         }
-        objects.push(new CuriousObject(obj_data, url, model));
+        var obj;
+        if (!klass)
+          obj = new CuriousObject(obj_data);
+        else {
+          obj = new klass();
+          for (var k in obj_data) { obj[k] = obj_data[k]; }
+        }
+        obj.id = obj_data.id;
+        obj.__url = url;
+        obj.__model = model;
+        objects.push(obj);
       }
       return objects;
     }
 
-    function parse_results_with_trees(relationships, results, existing_object_dicts) {
+    function parse_results_with_trees(relationships, classes, results, existing_object_dicts) {
       // get objects associated with each subquery. for each subquery, build a
       // hash of ID to object. existing_object_dicts should be an array of dicts,
       // each dict is a mapping of ID to existing objects. if existing objects
@@ -38,8 +65,11 @@
       var trees = [];
 
       for (var i=0; i<results.data.length; i++) {
+        var klass = null;
+        if (classes)
+          klass = classes[i];
         var model = results.results[i].model;
-        var result_objects = parse_objects(results.data[i], model);
+        var result_objects = parse_objects(results.data[i], model, klass);
         var d = {};
         for (var j=0; j<result_objects.length; j++) {
           if (existing_object_dicts !== undefined && existing_object_dicts !== null &&
@@ -88,8 +118,8 @@
       return {objects: objects, trees: trees};
     }
 
-    function parse_results(relationships, results, existing_object_dicts) {
-      return parse_results_with_trees(relationships, results, existing_object_dicts).objects;
+    function parse_results(relationships, classes, results, existing_object_dicts) {
+      return parse_results_with_trees(relationships, classes, results, existing_object_dicts).objects;
     }
 
     function dict_to_array(d) {
@@ -195,7 +225,7 @@
         var objects;
         var res;
 
-        res = CuriousObjects.parse_with_trees(relationships, resp.result, existing_object_dicts);
+        res = CuriousObjects.parse_with_trees(relationships, classes, resp.result, existing_object_dicts);
         objects = res.objects;
 
         for (i = 0; i < objects.length; i++) { objects[i] = CuriousObjects.d2a(objects[i]); }
@@ -206,12 +236,17 @@
       return http.post(curious_url, args).success(post_cb);
     }
 
+    function query(query_object, cb, params, tree_cb) {
+      var q = query_object.query();
+      __get(q, params, query_object.relationships, query_object.classes, null, cb, tree_cb);
+    }
+
     function get(q, relationships, cb, params, tree_cb) {
-      return __get(q, params, relationships, null, cb, tree_cb);
+      return __get(q, params, relationships, null, null, cb, tree_cb);
     }
 
     function get_with_objs(q, relationships, existing_object_arrays, cb, params, tree_cb) {
-      return __get(q, params, relationships, existing_object_arrays, cb, tree_cb);
+      return __get(q, params, relationships, null, existing_object_arrays, cb, tree_cb);
     }
 
     function get_with_start(q, relationships, starting_objects, cb, params, tree_cb) {
@@ -223,10 +258,11 @@
       }
       existing_object_arrays[0] = starting_objects;
 
-      return __get(q, params, relationships, existing_object_arrays, cb, tree_cb);
+      return __get(q, params, relationships, null, existing_object_arrays, cb, tree_cb);
     }
 
     return {
+      query: query,
       get: get,
       get_with_objs: get_with_objs,
       get_with_start: get_with_start
@@ -238,5 +274,6 @@
   else if (typeof exports !== 'undefined' && exports) { ex = exports; }
   ex.CuriousQ = CuriousQ;
   ex.CuriousObjects = CuriousObjects;
+  ex.CuriousQuery = CuriousQuery;
 
 })();
