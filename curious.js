@@ -208,7 +208,7 @@
       // Query-level arg settings
       if (params) {
         for (k in params) {
-          if (app_default_params.hasOwnProperty(k)) {
+          if (params.hasOwnProperty(k)) {
             args[k] = params[k];
           }
         }
