@@ -169,7 +169,7 @@
 
   var CuriousQ = function(curious_url, http, app_default_params, quiet) {
 
-    function __get(q, params, relationships, existing_object_arrays, cb, trees_cb) {
+    function __get(q, params, relationships, classes, existing_object_arrays, cb, trees_cb) {
       var i, k;
       var args, immutable_args;
       var data_array;
