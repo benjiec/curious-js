@@ -3,34 +3,17 @@
 
 (function(){
 
-  var CuriousQuery = function() {
-    this.terms = [];
-    this.relationships = [];
-    this.classes = [];
-  };
-
-  CuriousQuery.prototype = {
-    query: function() { return this.terms.join(' '); },
-    add: function(term, relationship, klass) {
-      this.terms.push(term);
-      this.relationships.push(relationship);
-      this.classes.push(klass);
-      return this;
-    },
-  };
-
   var CuriousObjects = (function() {
-    function CuriousObject(hash_data) {
+    function CuriousObject(hash_data, url, model) {
       this.id = hash_data.id;
       for (var k in hash_data) {
         this[k] = hash_data[k];
       }
-      this.__url = null;
-      this.__model = null;
-      this.__dirty = false;
+      this.__url = url;
+      this.__model = model;
     }
 
-    function parse_objects(data, model, klass) {
+    function parse_objects(data, model) {
       if (data.objects === undefined) { return []; }
       var objects = [];
       for (var i=0; i<data.objects.length; i++) {
@@ -40,22 +23,12 @@
         for (var j=0; j<data.fields.length; j++) {
           obj_data[data.fields[j]] = obj[j];
         }
-        var obj;
-        if (!klass)
-          obj = new CuriousObject(obj_data);
-        else {
-          obj = new klass();
-          for (var k in obj_data) { obj[k] = obj_data[k]; }
-        }
-        obj.id = obj_data.id;
-        obj.__url = url;
-        obj.__model = model;
-        objects.push(obj);
+        objects.push(new CuriousObject(obj_data, url, model));
       }
       return objects;
     }
 
-    function parse_results_with_trees(relationships, classes, results, existing_object_dicts) {
+    function parse_results_with_trees(relationships, results, existing_object_dicts) {
       // get objects associated with each subquery. for each subquery, build a
       // hash of ID to object. existing_object_dicts should be an array of dicts,
       // each dict is a mapping of ID to existing objects. if existing objects
@@ -65,11 +38,8 @@
       var trees = [];
 
       for (var i=0; i<results.data.length; i++) {
-        var klass = null;
-        if (classes)
-          klass = classes[i];
         var model = results.results[i].model;
-        var result_objects = parse_objects(results.data[i], model, klass);
+        var result_objects = parse_objects(results.data[i], model);
         var d = {};
         for (var j=0; j<result_objects.length; j++) {
           if (existing_object_dicts !== undefined && existing_object_dicts !== null &&
@@ -118,8 +88,8 @@
       return {objects: objects, trees: trees};
     }
 
-    function parse_results(relationships, classes, results, existing_object_dicts) {
-      return parse_results_with_trees(relationships, classes, results, existing_object_dicts).objects;
+    function parse_results(relationships, results, existing_object_dicts) {
+      return parse_results_with_trees(relationships, results, existing_object_dicts).objects;
     }
 
     function dict_to_array(d) {
@@ -169,15 +139,21 @@
 
   var CuriousQ = function(curious_url, http, app_default_params, quiet) {
 
-    function __get(q, params, relationships, classes, existing_object_arrays, cb, trees_cb) {
-      if (quiet === undefined || quiet !== true)
+    function __get(q, params, relationships, existing_object_arrays, cb, trees_cb) {
+      var i, k;
+      var args, immutable_args;
+      var data_array;
+      var existing_object_dicts;
+      var post_cb;
+    
+      if (quiet === undefined || quiet !== true) {
         console.warn(q);
+      }
 
-      var existing_object_dicts = undefined;
       if (existing_object_arrays) {
         existing_object_dicts = [];
-        for (var i=0; i<existing_object_arrays.length; i++) {
-          var data_array = existing_object_arrays[i];
+        for (i = 0; i < existing_object_arrays.length; i++) {
+          data_array = existing_object_arrays[i];
           if (data_array) {
             existing_object_dicts.push(CuriousObjects.a2d(data_array));
           }
@@ -187,56 +163,70 @@
         }
       }
 
-      var args = {d: 1, fk: 0, q: q};
-      var overwrite_args = {x: 0};
+      // Default args
+      args = {x: 0, fk: 0};
 
-      if (params) {
-        for (var k in params) {
-          if (args[k] === undefined) { args[k] = params[k]; }
-        }
-      }
+      // App-level arg settings
       if (app_default_params) {
-        for (var k in app_default_params) {
-          if (args[k] === undefined) { args[k] = app_default_params[k]; }
+        for (k in app_default_params) {
+          if (app_default_params.hasOwnProperty(k)) {
+            args[k] = app_default_params[k];
+          }
         }
       }
-      for (var k in overwrite_args) {
-        if (args[k] === undefined) { args[k] = overwrite_args[k]; }
+      
+      // Query-level arg settings
+      if (params) {
+        for (k in params) {
+          if (app_default_params.hasOwnProperty(k)) {
+            args[k] = params[k];
+          }
+        }
       }
-
-      var post_cb = function(resp) {
-        var res = CuriousObjects.parse_with_trees(relationships, classes, resp.result, existing_object_dicts);
-        var objects = res.objects;
-        for (var i=0; i<objects.length; i++) { objects[i] = CuriousObjects.d2a(objects[i]); }
+      
+      // Values for immutable args: these are always set, no matter what
+      immutable_args = {d: 1, q: q}; 
+      for (k in immutable_args) {
+        args[k] = immutable_args[k];
+      }
+      
+      post_cb = function(resp) {
+        var i;
+        var objects;
+        var res;
+    
+        res = CuriousObjects.parse_with_trees(relationships, resp.result, existing_object_dicts);
+        objects = res.objects;
+      
+        for (i = 0; i < objects.length; i++) { objects[i] = CuriousObjects.d2a(objects[i]); }
         cb(objects);
         if (trees_cb) { trees_cb(res.trees); }
       };
 
-      http.post(curious_url, args).success(post_cb);
+      return http.post(curious_url, args).success(post_cb);
     }
 
-    function query(query_object, cb, params, tree_cb) {
-      var q = query_object.query();
-      __get(q, params, query_object.relationships, query_object.classes, null, cb, tree_cb);
+    function get(q, relationships, cb, params, tree_cb) {
+      return __get(q, params, relationships, null, cb, tree_cb);
     }
-
-    function get(q, relationships, cb, params, tree_cb) { __get(q, params, relationships, null, null, cb, tree_cb); }
-
+    
     function get_with_objs(q, relationships, existing_object_arrays, cb, params, tree_cb) {
-      __get(q, params, relationships, null, existing_object_arrays, cb, tree_cb);
+      return __get(q, params, relationships, existing_object_arrays, cb, tree_cb);
     }
-
+    
     function get_with_start(q, relationships, starting_objects, cb, params, tree_cb) {
+      var i;
       var existing_object_arrays = [];
-      for (var i=0; i<relationships.length; i++) {
+      
+      for (i = 0; i < relationships.length; i++) {
         existing_object_arrays.push(null);
       }
       existing_object_arrays[0] = starting_objects;
-      __get(q, params, relationships, null, existing_object_arrays, cb, tree_cb);
+      
+      return __get(q, params, relationships, existing_object_arrays, cb, tree_cb);
     }
 
     return {
-      query: query,
       get: get,
       get_with_objs: get_with_objs,
       get_with_start: get_with_start
@@ -248,6 +238,5 @@
   else if (typeof exports !== 'undefined' && exports) { ex = exports; }
   ex.CuriousQ = CuriousQ;
   ex.CuriousObjects = CuriousObjects;
-  ex.CuriousQuery = CuriousQuery;
 
 })();
