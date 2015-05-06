@@ -182,7 +182,7 @@
         if (trees_cb) { trees_cb(res.trees); }
       };
 
-      http.post(curious_url, args).success(post_cb);
+      return http.post(curious_url, args).success(post_cb);
     }
 
     function get(q, relationships, cb, params, tree_cb) { __get(q, params, relationships, null, cb, tree_cb); }
