@@ -33,7 +33,7 @@
       // hash of ID to object. existing_object_dicts should be an array of dicts,
       // each dict is a mapping of ID to existing objects. if existing objects
       // are specified, will build relationships using existing objects.
-  
+
       var objects = [];
       var trees = [];
 
@@ -145,7 +145,7 @@
       var data_array;
       var existing_object_dicts;
       var post_cb;
-    
+
       if (quiet === undefined || quiet !== true) {
         console.warn(q);
       }
@@ -174,7 +174,7 @@
           }
         }
       }
-      
+
       // Query-level arg settings
       if (params) {
         for (k in params) {
@@ -183,21 +183,21 @@
           }
         }
       }
-      
+
       // Values for immutable args: these are always set, no matter what
-      immutable_args = {d: 1, q: q}; 
+      immutable_args = {d: 1, q: q};
       for (k in immutable_args) {
         args[k] = immutable_args[k];
       }
-      
+
       post_cb = function(resp) {
         var i;
         var objects;
         var res;
-    
+
         res = CuriousObjects.parse_with_trees(relationships, resp.result, existing_object_dicts);
         objects = res.objects;
-      
+
         for (i = 0; i < objects.length; i++) { objects[i] = CuriousObjects.d2a(objects[i]); }
         cb(objects);
         if (trees_cb) { trees_cb(res.trees); }
@@ -209,20 +209,20 @@
     function get(q, relationships, cb, params, tree_cb) {
       return __get(q, params, relationships, null, cb, tree_cb);
     }
-    
+
     function get_with_objs(q, relationships, existing_object_arrays, cb, params, tree_cb) {
       return __get(q, params, relationships, existing_object_arrays, cb, tree_cb);
     }
-    
+
     function get_with_start(q, relationships, starting_objects, cb, params, tree_cb) {
       var i;
       var existing_object_arrays = [];
-      
+
       for (i = 0; i < relationships.length; i++) {
         existing_object_arrays.push(null);
       }
       existing_object_arrays[0] = starting_objects;
-      
+
       return __get(q, params, relationships, existing_object_arrays, cb, tree_cb);
     }
 
