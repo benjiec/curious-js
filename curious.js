@@ -212,7 +212,7 @@
         if (trees_cb) { trees_cb(res.trees); }
       };
 
-      http.post(curious_url, args).success(post_cb);
+      return http.post(curious_url, args).success(post_cb);
     }
 
     function query(query_object, cb, params, tree_cb) {
