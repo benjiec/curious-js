@@ -234,16 +234,71 @@
 
   }());
 
+  function convert_results_to_output(relationships, objects) {
+    var i, j;
+    var output = {};
+
+    for (i = 0; i < objects.length; i++) {
+      if (output[relationships[i]]) {
+        j = 2;
+        while (output[relationships[i]+'_'+j]) { j++; }
+        output[relationships[i]+'_'+j] = _CuriousObjects.d2a(objects[i]);
+      }
+      else
+        output[relationships[i]] = _CuriousObjects.d2a(objects[i]);
+    }
+
+    return output;
+  }
+
+  function get_args(query_args, app_default_args) {
+    var k;
+    var args = {x: 0, fk: 0}; // default args
+    var immutable_args = {d: 1}; // these are always set, no matter what
+
+    if (app_default_args) {
+      for (k in app_default_args) {
+        if (app_default_args.hasOwnProperty(k)) {
+          args[k] = app_default_args[k];
+        }
+      }
+    }
+
+    if (query_args) {
+      for (k in query_args) {
+        if (query_args.hasOwnProperty(k)) {
+          args[k] = query_args[k];
+        }
+      }
+    }
+
+    for (k in immutable_args) {
+      args[k] = immutable_args[k];
+    }
+
+    return args;
+  }
+
+  function convert_array_array_to_dict_array(objects_array) {
+    var i;
+    var dict_array = [];
+    for (i=0; i<objects_array.length; i++) {
+      if (objects_array[i]) {
+        dict_array.push(_CuriousObjects.a2d(objects_array[i]));
+      }
+      else {
+        dict_array.push(null);
+      }
+    }
+    return dict_array;
+  }
 
   // Helper for making a Curious query and getting back parsed objects. Use with
   // angular $http compatible HTTP request facilities (e.g. jQuery?)
 
   var CuriousQ = function(curious_url, http, app_default_params, quiet) {
     function get(q, relationships, classes, params, existing_objects, objects_cb, trees_cb) {
-      var i, k;
-      var args, immutable_args;
-      var data_array;
-      var existing_object_dicts;
+      var args;
       var post_cb;
 
       if (quiet === undefined || quiet !== true) {
@@ -251,54 +306,17 @@
       }
 
       if (existing_objects) {
-        existing_object_dicts = [];
-        for (i = 0; i < existing_objects.length; i++) {
-          data_array = existing_objects[i];
-          if (data_array) {
-            existing_object_dicts.push(_CuriousObjects.a2d(data_array));
-          }
-          else {
-            existing_object_dicts.push(null);
-          }
-        }
+        existing_objects = convert_array_array_to_dict_array(existing_objects);
       }
 
-      // Default args
-      args = {x: 0, fk: 0};
-
-      // App-level arg settings
-      if (app_default_params) {
-        for (k in app_default_params) {
-          if (app_default_params.hasOwnProperty(k)) {
-            args[k] = app_default_params[k];
-          }
-        }
-      }
-
-      // Query-level arg settings
-      if (params) {
-        for (k in params) {
-          if (params.hasOwnProperty(k)) {
-            args[k] = params[k];
-          }
-        }
-      }
-
-      // Values for immutable args: these are always set, no matter what
-      immutable_args = {d: 1, q: q};
-      for (k in immutable_args) {
-        args[k] = immutable_args[k];
-      }
+      args = get_args(params, app_default_params);
+      args.q = q;
 
       post_cb = function(resp) {
-        var i;
         var objects;
         var res;
-
-        res = _CuriousObjects.parse_with_trees(relationships, classes, resp.result, existing_object_dicts);
-        objects = res.objects;
-
-        for (i = 0; i < objects.length; i++) { objects[i] = _CuriousObjects.d2a(objects[i]); }
+        res = _CuriousObjects.parse_with_trees(relationships, classes, resp.result, existing_objects);
+        objects = convert_results_to_output(relationships, res.objects);
         objects_cb(objects);
         if (trees_cb) { trees_cb(res.trees); }
       };
