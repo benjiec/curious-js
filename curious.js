@@ -3,22 +3,6 @@
 
 (function(){
 
-  var CuriousQuery = function() {
-    this.terms = [];
-    this.relationships = [];
-    this.classes = [];
-  };
-
-  CuriousQuery.prototype = {
-    query: function() { return this.terms.join(' '); },
-    add: function(term, relationship, klass) {
-      this.terms.push(term);
-      this.relationships.push(relationship);
-      this.classes.push(klass);
-      return this;
-    },
-  };
-
   var CuriousObjects = (function() {
     function CuriousObject(hash_data) {
       this.id = hash_data.id;
@@ -236,11 +220,6 @@
       return http.post(curious_url, args).success(post_cb);
     }
 
-    function query(query_object, cb, params, tree_cb) {
-      var q = query_object.query();
-      __get(q, params, query_object.relationships, query_object.classes, null, cb, tree_cb);
-    }
-
     function get(q, relationships, cb, params, tree_cb) {
       return __get(q, params, relationships, null, null, cb, tree_cb);
     }
@@ -262,7 +241,6 @@
     }
 
     return {
-      query: query,
       get: get,
       get_with_objs: get_with_objs,
       get_with_start: get_with_start
@@ -274,6 +252,4 @@
   else if (typeof exports !== 'undefined' && exports) { ex = exports; }
   ex.CuriousQ = CuriousQ;
   ex.CuriousObjects = CuriousObjects;
-  ex.CuriousQuery = CuriousQuery;
-
 })();
