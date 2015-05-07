@@ -27,10 +27,16 @@
     this.implicit_join = true;
   };
 
+  function make_obj(klass) {
+    return function(model) {
+      return new klass();
+    }
+  }
+
   var CuriousQuery = function() {
     this.terms = [];
     this.relationships = [];
-    this.classes = [];
+    this.objfs = [];
     this.params = null;
     this.existing_objects = null;  // array of object arrays
   };
@@ -50,31 +56,45 @@
       return s.join('');
     },
 
-    add: function(term, relationship, klass) {
+    add: function(term, relationship) {
       this.terms.push(term);
       this.relationships.push(relationship);
-      this.classes.push(klass);
+      this.objfs.push(null);
       return this;
     },
 
-    start: function(s, relationship, klass) {
-      return this.add(new QueryTermFollow(s), relationship, klass);
+    start: function(s, relationship) {
+      return this.add(new QueryTermFollow(s), relationship);
     },
 
-    follow: function(s, relationship, klass) {
-      return this.add(new QueryTermFollow(s), relationship, klass);
+    follow: function(s, relationship) {
+      return this.add(new QueryTermFollow(s), relationship);
     },
 
-    having: function(s, relationship, klass) {
-      return this.add(new QueryTermHaving(s), relationship, klass);
+    having: function(s, relationship) {
+      return this.add(new QueryTermHaving(s), relationship);
     },
 
-    not_having: function(s, relationship, klass) {
-      return this.add(new QueryTermNotHaving(s), relationship, klass);
+    not_having: function(s, relationship) {
+      return this.add(new QueryTermNotHaving(s), relationship);
     },
 
-    with: function(s, relationship, klass) {
-      return this.add(new QueryTermWith(s), relationship, klass);
+    with: function(s, relationship) {
+      return this.add(new QueryTermWith(s), relationship);
+    },
+
+    wrap_with: function(klass) {
+      if (this.objfs.length === 0)
+        throw("Cannot specify type of object before starting a query");
+      this.objfs[this.objfs.length-1] = make_obj(klass);
+      return this;
+    },
+
+    wrap_dynamically: function(f) {
+      if (this.objfs.length === 0)
+        throw("Cannot specify function for creating object before starting a query");
+      this.objfs[this.objfs.length-1] = f;
+      return this;
     },
 
     set_params: function(p) {
@@ -89,7 +109,7 @@
 
     perform: function(clt, objects_cb, trees_cb) {
       var q = this.query()
-      clt.get(q, this.relationships, this.classes,
+      clt.get(q, this.relationships, this.objfs,
               this.params, this.existing_objects,
               objects_cb, trees_cb);
     }
@@ -106,7 +126,7 @@
       this.__dirty = false;
     }
 
-    function parse_objects(data, model, klass) {
+    function parse_objects(data, model, obj_f) {
       if (data.objects === undefined) { return []; }
       var objects = [];
       for (var i=0; i<data.objects.length; i++) {
@@ -117,10 +137,10 @@
           obj_data[data.fields[j]] = obj[j];
         }
         var obj;
-        if (!klass)
+        if (!obj_f)
           obj = new CuriousObject(obj_data);
         else {
-          obj = new klass();
+          obj = obj_f(obj_data);
           for (var k in obj_data) { obj[k] = obj_data[k]; }
         }
         obj.id = obj_data.id;
@@ -131,7 +151,7 @@
       return objects;
     }
 
-    function parse_results_with_trees(relationships, classes, results, existing_object_dicts) {
+    function parse_results_with_trees(relationships, objfs, results, existing_object_dicts) {
       // get objects associated with each subquery. for each subquery, build a
       // hash of ID to object. existing_object_dicts should be an array of dicts,
       // each dict is a mapping of ID to existing objects. if existing objects
@@ -141,11 +161,11 @@
       var trees = [];
 
       for (var i=0; i<results.data.length; i++) {
-        var klass = null;
-        if (classes)
-          klass = classes[i];
+        var obj_f = null;
+        if (objfs)
+          obj_f = objfs[i];
         var model = results.results[i].model;
-        var result_objects = parse_objects(results.data[i], model, klass);
+        var result_objects = parse_objects(results.data[i], model, obj_f);
         var d = {};
         for (var j=0; j<result_objects.length; j++) {
           if (existing_object_dicts !== undefined && existing_object_dicts !== null &&
@@ -229,7 +249,7 @@
       d2a: dict_to_array,
       a2d: array_to_dict,
       id_list: id_list,
-      id_str: id_str
+      id_str: id_str,
     }
 
   }());
@@ -297,7 +317,7 @@
   // angular $http compatible HTTP request facilities (e.g. jQuery?)
 
   var CuriousQ = function(curious_url, http, app_default_params, quiet) {
-    function get(q, relationships, classes, params, existing_objects, objects_cb, trees_cb) {
+    function get(q, relationships, objfs, params, existing_objects, objects_cb, trees_cb) {
       var args;
       var post_cb;
 
@@ -315,7 +335,7 @@
       post_cb = function(resp) {
         var objects;
         var res;
-        res = _CuriousObjects.parse_with_trees(relationships, classes, resp.result, existing_objects);
+        res = _CuriousObjects.parse_with_trees(relationships, objfs, resp.result, existing_objects);
         objects = convert_results_to_output(relationships, res.objects);
         objects_cb(objects);
         if (trees_cb) { trees_cb(res.trees); }
@@ -330,6 +350,7 @@
   var ex = undefined;
   if (typeof window !== 'undefined') { ex = window; }
   else if (typeof exports !== 'undefined' && exports) { ex = exports; }
+  // XXX
   ex.CuriousQ2 = CuriousQ;
   ex.CuriousQuery = CuriousQuery;
 
