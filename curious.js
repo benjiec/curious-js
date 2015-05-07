@@ -60,7 +60,7 @@
       // hash of ID to object. existing_object_dicts should be an array of dicts,
       // each dict is a mapping of ID to existing objects. if existing objects
       // are specified, will build relationships using existing objects.
-  
+
       var objects = [];
       var trees = [];
 
@@ -170,14 +170,20 @@
   var CuriousQ = function(curious_url, http, app_default_params, quiet) {
 
     function __get(q, params, relationships, classes, existing_object_arrays, cb, trees_cb) {
-      if (quiet === undefined || quiet !== true)
-        console.warn(q);
+      var i, k;
+      var args, immutable_args;
+      var data_array;
+      var existing_object_dicts;
+      var post_cb;
 
-      var existing_object_dicts = undefined;
+      if (quiet === undefined || quiet !== true) {
+        console.warn(q);
+      }
+
       if (existing_object_arrays) {
         existing_object_dicts = [];
-        for (var i=0; i<existing_object_arrays.length; i++) {
-          var data_array = existing_object_arrays[i];
+        for (i = 0; i < existing_object_arrays.length; i++) {
+          data_array = existing_object_arrays[i];
           if (data_array) {
             existing_object_dicts.push(CuriousObjects.a2d(data_array));
           }
@@ -187,32 +193,47 @@
         }
       }
 
-      var args = {d: 1, fk: 0, q: q};
-      var overwrite_args = {x: 0};
+      // Default args
+      args = {x: 0, fk: 0};
 
-      if (params) {
-        for (var k in params) {
-          if (args[k] === undefined) { args[k] = params[k]; }
-        }
-      }
+      // App-level arg settings
       if (app_default_params) {
-        for (var k in app_default_params) {
-          if (args[k] === undefined) { args[k] = app_default_params[k]; }
+        for (k in app_default_params) {
+          if (app_default_params.hasOwnProperty(k)) {
+            args[k] = app_default_params[k];
+          }
         }
       }
-      for (var k in overwrite_args) {
-        if (args[k] === undefined) { args[k] = overwrite_args[k]; }
+
+      // Query-level arg settings
+      if (params) {
+        for (k in params) {
+          if (params.hasOwnProperty(k)) {
+            args[k] = params[k];
+          }
+        }
       }
 
-      var post_cb = function(resp) {
-        var res = CuriousObjects.parse_with_trees(relationships, classes, resp.result, existing_object_dicts);
-        var objects = res.objects;
-        for (var i=0; i<objects.length; i++) { objects[i] = CuriousObjects.d2a(objects[i]); }
+      // Values for immutable args: these are always set, no matter what
+      immutable_args = {d: 1, q: q};
+      for (k in immutable_args) {
+        args[k] = immutable_args[k];
+      }
+
+      post_cb = function(resp) {
+        var i;
+        var objects;
+        var res;
+
+        res = CuriousObjects.parse_with_trees(relationships, classes, resp.result, existing_object_dicts);
+        objects = res.objects;
+
+        for (i = 0; i < objects.length; i++) { objects[i] = CuriousObjects.d2a(objects[i]); }
         cb(objects);
         if (trees_cb) { trees_cb(res.trees); }
       };
 
-      http.post(curious_url, args).success(post_cb);
+      return http.post(curious_url, args).success(post_cb);
     }
 
     function query(query_object, cb, params, tree_cb) {
@@ -220,19 +241,24 @@
       __get(q, params, query_object.relationships, query_object.classes, null, cb, tree_cb);
     }
 
-    function get(q, relationships, cb, params, tree_cb) { __get(q, params, relationships, null, null, cb, tree_cb); }
+    function get(q, relationships, cb, params, tree_cb) {
+      return __get(q, params, relationships, null, null, cb, tree_cb);
+    }
 
     function get_with_objs(q, relationships, existing_object_arrays, cb, params, tree_cb) {
-      __get(q, params, relationships, null, existing_object_arrays, cb, tree_cb);
+      return __get(q, params, relationships, null, existing_object_arrays, cb, tree_cb);
     }
 
     function get_with_start(q, relationships, starting_objects, cb, params, tree_cb) {
+      var i;
       var existing_object_arrays = [];
-      for (var i=0; i<relationships.length; i++) {
+
+      for (i = 0; i < relationships.length; i++) {
         existing_object_arrays.push(null);
       }
       existing_object_arrays[0] = starting_objects;
-      __get(q, params, relationships, null, existing_object_arrays, cb, tree_cb);
+
+      return __get(q, params, relationships, null, existing_object_arrays, cb, tree_cb);
     }
 
     return {
