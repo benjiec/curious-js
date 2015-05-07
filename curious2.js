@@ -5,41 +5,26 @@
 
   var QueryTermFollow = function(term) {
     this.term = term;
-    this.to_s = function(last) {
-      if (last)
-        return this.term;
-      return this.term+', ';
-    }
+    this.to_s = function() { return this.term; };
+    this.implicit_join = false;
   };
 
   var QueryTermHaving = function(term) {
     this.term = term;
-    this.to_s = function(last) {
-      var s = '+('+term+')';
-      if (last)
-        return s;
-      return s+' ';
-    }
+    this.to_s = function() { return '+('+term+')'; };
+    this.implicit_join = true;
   };
 
   var QueryTermNotHaving = function(term) {
     this.term = term;
-    this.to_s = function(last) {
-      var s = '-('+term+')';
-      if (last)
-        return s;
-      return s+' ';
-    }
+    this.to_s = function() { return '-('+term+')'; };
+    this.implicit_join = true;
   };
 
   var QueryTermWith = function(term) {
     this.term = term;
-    this.to_s = function(last) {
-      var s = '?('+term+')';
-      if (last)
-        return s;
-      return s+' ';
-    }
+    this.to_s = function() { return '?('+term+')'; };
+    this.implicit_join = true;
   };
 
   var CuriousQuery = function() {
@@ -54,7 +39,13 @@
     query: function() {
       var s = [];
       for (var i=0; i<this.terms.length; i++) {
-        s.push(this.terms[i].to_s(i+1 === this.terms.length));
+        if (i > 0) {
+          if (!this.terms[i-1].implicit_join && !this.terms[i].implicit_join)
+            s.push(', ');
+          else
+            s.push(' ');
+        }
+        s.push(this.terms[i].to_s());
       }
       return s.join('');
     },
@@ -67,23 +58,23 @@
     },
 
     start: function(s, relationship, klass) {
-      return this.add(QueryTermFollow(s), relationship, klass);
+      return this.add(new QueryTermFollow(s), relationship, klass);
     },
 
     follow: function(s, relationship, klass) {
-      return this.add(QueryTermFollow(s), relationship, klass);
+      return this.add(new QueryTermFollow(s), relationship, klass);
     },
 
     having: function(s, relationship, klass) {
-      return this.add(QueryTermHaving(s), relationship, klass);
+      return this.add(new QueryTermHaving(s), relationship, klass);
     },
 
     not_having: function(s, relationship, klass) {
-      return this.add(QueryTermNotHaving(s), relationship, klass);
+      return this.add(new QueryTermNotHaving(s), relationship, klass);
     },
 
     with: function(s, relationship, klass) {
-      return this.add(QueryTermWith(s), relationship, klass);
+      return this.add(new QueryTermWith(s), relationship, klass);
     },
 
     set_params: function(p) {
