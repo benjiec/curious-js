@@ -56,31 +56,39 @@
       return s.join('');
     },
 
-    add: function(term, relationship) {
+    // extend this query with another query
+    extend: function(query) {
+      for (var i=0; i<query.terms.length; i++) {
+        this.append(query.terms[i], query.relationships[i], query.objfs[i]);
+      }
+      return this;
+    },
+
+    append: function(term, relationship, obj_f) {
       this.terms.push(term);
       this.relationships.push(relationship);
-      this.objfs.push(null);
+      this.objfs.push(obj_f);
       return this;
     },
 
     start: function(s, relationship) {
-      return this.add(new QueryTermFollow(s), relationship);
+      return this.append(new QueryTermFollow(s), relationship);
     },
 
     follow: function(s, relationship) {
-      return this.add(new QueryTermFollow(s), relationship);
+      return this.append(new QueryTermFollow(s), relationship);
     },
 
     having: function(s, relationship) {
-      return this.add(new QueryTermHaving(s), relationship);
+      return this.append(new QueryTermHaving(s), relationship);
     },
 
     not_having: function(s, relationship) {
-      return this.add(new QueryTermNotHaving(s), relationship);
+      return this.append(new QueryTermNotHaving(s), relationship);
     },
 
     with: function(s, relationship) {
-      return this.add(new QueryTermWith(s), relationship);
+      return this.append(new QueryTermWith(s), relationship);
     },
 
     wrap_with: function(klass) {
