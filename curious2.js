@@ -123,7 +123,7 @@
     }
   };
 
-  var _CuriousObjects = (function() {
+  var CuriousObjects = (function() {
     function CuriousObject(hash_data) {
       this.id = hash_data.id;
       for (var k in hash_data) {
@@ -270,10 +270,10 @@
       if (output[relationships[i]]) {
         j = 2;
         while (output[relationships[i]+'_'+j]) { j++; }
-        output[relationships[i]+'_'+j] = _CuriousObjects.d2a(objects[i]);
+        output[relationships[i]+'_'+j] = CuriousObjects.d2a(objects[i]);
       }
       else
-        output[relationships[i]] = _CuriousObjects.d2a(objects[i]);
+        output[relationships[i]] = CuriousObjects.d2a(objects[i]);
     }
 
     return output;
@@ -312,7 +312,7 @@
     var dict_array = [];
     for (i=0; i<objects_array.length; i++) {
       if (objects_array[i]) {
-        dict_array.push(_CuriousObjects.a2d(objects_array[i]));
+        dict_array.push(CuriousObjects.a2d(objects_array[i]));
       }
       else {
         dict_array.push(null);
@@ -343,7 +343,7 @@
       post_cb = function(resp) {
         var objects;
         var res;
-        res = _CuriousObjects.parse_with_trees(relationships, objfs, resp.result, existing_objects);
+        res = CuriousObjects.parse_with_trees(relationships, objfs, resp.result, existing_objects);
         objects = convert_results_to_output(relationships, res.objects);
         objects_cb(objects);
         if (trees_cb) { trees_cb(res.trees); }
@@ -358,6 +358,7 @@
   var ex = undefined;
   if (typeof window !== 'undefined') { ex = window; }
   else if (typeof exports !== 'undefined' && exports) { ex = exports; }
+  ex.CuriousObjects = CuriousObjects;
   ex.CuriousQ = CuriousQ;
   ex.CuriousQuery = CuriousQuery;
 
