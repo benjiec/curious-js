@@ -358,8 +358,7 @@
   var ex = undefined;
   if (typeof window !== 'undefined') { ex = window; }
   else if (typeof exports !== 'undefined' && exports) { ex = exports; }
-  // XXX
-  ex.CuriousQ2 = CuriousQ;
+  ex.CuriousQ = CuriousQ;
   ex.CuriousQuery = CuriousQuery;
 
 })();
