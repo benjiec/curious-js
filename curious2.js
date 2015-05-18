@@ -134,18 +134,27 @@
       this.__dirty = false;
     }
 
-    function parse_objects(data, model, obj_f) {
+    function parse_objects(data, model, obj_f, existing_objs) {
       if (data.objects === undefined) { return []; }
       var objects = [];
+
       for (var i=0; i<data.objects.length; i++) {
         var obj = data.objects[i];
         var url = data.urls[i];
         var obj_data = {};
+
         for (var j=0; j<data.fields.length; j++) {
           obj_data[data.fields[j]] = obj[j];
         }
+
+        var id = obj_data.id;
         var obj;
-        if (!obj_f)
+
+        if (id !== undefined && existing_objs && existing_objs[id] !== undefined) {
+          obj = existing_objs[id];
+          for (var k in obj_data) { obj[k] = obj_data[k]; }
+        }
+        else if (!obj_f)
           obj = new CuriousObject(obj_data);
         else {
           obj = obj_f(obj_data);
@@ -173,18 +182,13 @@
         if (objfs)
           obj_f = objfs[i];
         var model = results.results[i].model;
-        var result_objects = parse_objects(results.data[i], model, obj_f);
+        var existing_objs = null;
+        if (existing_object_dicts !== undefined && existing_object_dicts !== null &&
+            existing_object_dicts[i] !== undefined && existing_object_dicts[i] !== null)
+          existing_objs = existing_object_dicts[i];
+        var result_objects = parse_objects(results.data[i], model, obj_f, existing_objs);
         var d = {};
-        for (var j=0; j<result_objects.length; j++) {
-          if (existing_object_dicts !== undefined && existing_object_dicts !== null &&
-              existing_object_dicts[i] !== undefined && existing_object_dicts[i] !== null &&
-              existing_object_dicts[i][result_objects[j].id] !== undefined) {
-            d[result_objects[j].id] = existing_object_dicts[i][result_objects[j].id];
-          }
-          else {
-            d[result_objects[j].id] = result_objects[j];
-          }
-        }
+        for (var j=0; j<result_objects.length; j++) { d[result_objects[j].id] = result_objects[j]; }
         objects.push(d);
         trees.push(null);
       }
