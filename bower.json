@@ -16,5 +16,9 @@
   "main": [
     "./curious.js"
   ],
-  "dependencies": { }
+  "dependencies": {
+  },
+  "devDependencies": {
+    "mocha": "~2.2.5"
+  }
 }
