@@ -1,7 +1,18 @@
 {
   "name": "curious-js",
+  "authors": [
+    {
+      "name": "Benjie Chen",
+      "email": "benjie@ginkgobioworks.com"
+    },
+    {
+      "name": "Misha Wolfson",
+      "email": "misha@ginkgobioworks.com",
+      "homepage": "http://myw.github.io"
+    }
+  ],
   "version": "0.0.1",
-  "ignore": [ ],
+  "ignore": [],
   "main": [
     "./curious.js"
   ],
