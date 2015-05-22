@@ -856,14 +856,16 @@
      * @param {Array<?function>} constructors An array of constructors for any
      *                                        custom classes, or null for the
      *                                        default.
+     * @param {Object} params Query-specific parameters for the request.
+     * @param {Array<Object>[]} existingObjects Objects that already exist to be
+     *                                          linked into the results returned
+     *                                          by this query.
      *
-     * @return {Promise} A promise XXX not yet really implemented, unless
-     *                   the http client automatically does that.
+     * @return {Promise} A promise that resolves to an object:
+     *                   {objects: the fully parsed objects,
+     *                    trees: the tree ID structure for recursive queries}
      */
-    function get(
-      q, relationships, constructors, params, existingObjects,
-      objectsCallback, treesCallback
-    ) {
+    function get(q, relationships, constructors, params, existingObjects) {
       var args;
 
       if (!quiet) {
@@ -879,20 +881,15 @@
 
       return http
         .post(curiousURL, args)
-        .success(function (response) {
-          var objects;
-          var parsedResult;
-
-          parsedResult = CuriousObjects.parse(
+        .then(function (response) {
+          var parsedResult = CuriousObjects.parse(
             relationships, constructors, response.result, existingObjects
           );
-          objects = _convertResultsToOutput(relationships, parsedResult.objects);
 
-          // Fire callbacks
-          objectsCallback(objects);
-          if (treesCallback) {
-            treesCallback(parsedResult.trees);
-          }
+          return {
+            objects: _convertResultsToOutput(relationships, parsedResult.objects),
+            trees: parsedResult.trees,
+          };
         });
     }
 
