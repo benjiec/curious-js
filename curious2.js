@@ -837,15 +837,16 @@
    * @public
    *
    * @param {string} curiousURL The URL of the Curious server
-   * @param {Object} http An angular-compatible http transport layer, which
-   *                      supports a .post method.
+   * @param {Object} requestClient An angular-compatible http transport layer, which
+   *                      supports a .post method, such as jQuery's xhr
+   *                      facilities, or axios. Must return a promise.
    * @param {Object} appDefaultArgs Default parameters to send to the serever
    *                                with every query performed by this client.
    * @param {boolean} quiet Unless true, log every query to the console.
    *
    * @return {Object} A client object with a single get method.
    */
-  var CuriousClient = function (curiousURL, http, appDefaultArgs, quiet) {
+  var CuriousClient = function (curiousURL, requestClient, appDefaultArgs, quiet) {
 
     /**
      * Perform a Curious query and return back parsed objects.
@@ -879,7 +880,7 @@
       args = _getArgs(params, appDefaultArgs);
       args.q = q;
 
-      return http
+      return requestClient
         .post(curiousURL, args)
         .then(function (response) {
           var parsedResult = CuriousObjects.parse(
