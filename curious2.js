@@ -677,7 +677,9 @@
       var objectsByID = {};
 
       arrayOfObjects.forEach(function (object) {
-        objectsByID[object.id] = object;
+        if (object.id === 0 || object.id) {
+          objectsByID[object.id] = object;
+        }
       });
 
       return objectsByID;
