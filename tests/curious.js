@@ -135,4 +135,49 @@ describe('CuriousObjects', function () {
     });
 
   });
+
+  describe('#idList', function () {
+    var objs;
+
+    beforeEach(function () {
+      objs = [
+        {name: 'a', id: 1},
+        {name: 'b', id: 2},
+        {name: 'c', id: 3},
+      ];
+    });
+
+    it('should contain all of the IDs', function () {
+      assert.deepEqual(
+        curious.CuriousObjects.idList(objs).sort(),
+        [1, 2, 3]
+      );
+    });
+
+    it('should not contain duplicates', function () {
+      objs.push({name: 'b2', id: 2});
+
+      assert.deepEqual(
+        curious.CuriousObjects.idList(objs).sort(),
+        [1, 2, 3]
+      );
+    });
+
+    it('should maintain the order of IDs and keep the first unique one', function () {
+
+      // This object with id = 2 will be ignored, but the first one will be kept.
+      objs.push({name: 'b2', id: 2});
+      objs.push({name: 'd', id: 4});
+      objs.push({name: 'e', id: 0});
+      // This object with id = 2 will also be ignored
+      objs.push({name: 'b3', id: 2});
+      objs.push({name: 'f', id: 23});
+
+      assert.deepEqual(
+        curious.CuriousObjects.idList(objs),
+        [1, 2, 3, 4, 0, 23]
+      );
+    });
+  });
+
 });
