@@ -180,4 +180,46 @@ describe('CuriousObjects', function () {
     });
   });
 
+  describe('#idString', function () {
+    var objs;
+
+    beforeEach(function () {
+      objs = [
+        {name: 'a', id: 1},
+        {name: 'b', id: 2},
+        {name: 'c', id: 3},
+      ];
+    });
+
+    it('should be equivalent to idList', function () {
+      assert.deepEqual(
+        curious.CuriousObjects.idString(objs).split(','),
+        curious.CuriousObjects.idList(objs)
+      );
+
+      // This object with id = 2 will be ignored, but the first one will be kept.
+      objs.push({name: 'b2', id: 2});
+      objs.push({name: 'd', id: 4});
+      objs.push({name: 'e', id: 0});
+      // This object with id = 2 will also be ignored
+      objs.push({name: 'b3', id: 2});
+      objs.push({name: 'f', id: 23});
+
+      assert.deepEqual(
+        curious.CuriousObjects.idString(objs).split(','),
+        curious.CuriousObjects.idList(objs)
+      );
+    });
+
+    it('should not escape commas', function () {
+      objs.push({name: 'commas', id: '4,5,6'});
+
+      assert.deepEqual(
+        // 1, 2, 3, 4, 5, 6
+        curious.CuriousObjects.idString(objs).split(','),
+        // Remove the element we added ('4,5,6') and add 4, 5, 6 to the end
+        curious.CuriousObjects.idList(objs).slice(0, -1).concat([4, 5, 6])
+      );
+    });
+  });
 });
