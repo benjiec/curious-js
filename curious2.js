@@ -214,11 +214,12 @@
           var src = join_src[obj_src[1]];
           if (obj_src[0]) {
             var obj = join_obj[obj_src[0]];
-
-            // forward relationship from query to next query
-            src[rel].push(obj);
-            // reverse relationship
-            obj[rev].push(src);
+            if (obj && src) {
+              // forward relationship from query to next query
+              src[rel].push(obj);
+              // reverse relationship
+              obj[rev].push(src);
+            }
           }
         }
       }
