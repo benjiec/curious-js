@@ -426,17 +426,19 @@
      * @class
      */
     function CuriousObject(objectData) {
+      var newObject = this;
+
       // Special properties that aren't data-bearing, but are often convenient
-      this.__url = null;
-      this.__model = null;
-      this.__dirty = false;
+      newObject.__url = null;
+      newObject.__model = null;
+      newObject.__dirty = false;
 
       // Copy over the object data to be properties of the new CuriousObject
       Object.keys(objectData).forEach(function (key) {
-        this[key] = objectData[key];
+        newObject[key] = objectData[key];
       });
 
-      return this;
+      return newObject;
     }
 
     /**
@@ -476,18 +478,18 @@
 
           // Combine the data from the fields
           queryData.fields.forEach(function (fieldName, fieldIndex) {
-            objData[fieldName] = objectDataarray[fieldIndex];
+            objectData[fieldName] = objectDataArray[fieldIndex];
           });
 
           if (customConstructor) {
-            obj = new customConstructor(objData);
+            obj = new customConstructor(objectData);
 
             // We can't be sure that the custom constructor that was passed in
             // got all the fields assigned, so we should do it ourselves just
             // in case for any fields the constructor might have missed.
             queryData.fields.forEach(function (fieldName) {
               if (!obj.hasOwnProperty(fieldName)) {
-                obj[fieldName] = objData[fieldName];
+                obj[fieldName] = objectData[fieldName];
               }
             });
 
@@ -497,7 +499,7 @@
 
           } else {
             // The CuriousObject constructor does this automatically
-            obj = new CuriousObject(objData);
+            obj = new CuriousObject(objectData);
           }
 
           // Set the magic fields
@@ -592,6 +594,7 @@
           trees.push(null);
         });
 
+
         // For each subquery, add a relationship to the results of the next
         // subquery and then a reverse relationship
         queryJSONResponse.results.forEach(function (queryResult, queryIndex) {
@@ -613,33 +616,35 @@
           var joinSourceObjects = combinedObjects[joinIndex];
           var joinDestinationObjects = combinedObjects[queryIndex];
 
-          // Initialize empty arrays for relationships
-          Object.keys(joinSourceObjects).forEach(function (id) {
-            joinSourceObjects[id][forwardRelationshipName] = [];
-          });
+          if (joinSourceObjects && joinDestinationObjects) {
+            // Initialize empty arrays for relationships
+            Object.keys(joinSourceObjects).forEach(function (id) {
+              joinSourceObjects[id][forwardRelationshipName] = [];
+            });
 
-          Object.keys(joinDestinationObjects).forEach(function (id) {
-            joinDestinationObjects[id][reverseRelationshipName] = [];
-          });
+            Object.keys(joinDestinationObjects).forEach(function (id) {
+              joinDestinationObjects[id][reverseRelationshipName] = [];
+            });
 
-          // Go through each of the join ID pairs, and make the equvalent
-          // reference links in the corresponding object
-          joinIDPairs.forEach(function (joinIDPair) {
-            var id = joinIDPair[0];
-            var srcID = joinIDPair[1]; // the ID of the parent
-            var obj, srcObj; // the corresponding objects
+            // Go through each of the join ID pairs, and make the equvalent
+            // reference links in the corresponding object
+            joinIDPairs.forEach(function (joinIDPair) {
+              var id = joinIDPair[0];
+              var srcID = joinIDPair[1]; // the ID of the parent
+              var obj, srcObj; // the corresponding objects
 
 
-            if (srcID) {
-              obj = joinDestinationObjects[id];
-              srcObj = joinSourceObjects[srcID];
+              if (srcID) {
+                obj = joinDestinationObjects[id];
+                srcObj = joinSourceObjects[srcID];
 
-              // Forward relationship from query to next query
-              srcObj[forwardRelationshipName].push(obj);
-              // Reverse relationship to previous query
-              obj[reverseRelationshipName].push(srcObj);
-            }
-          });
+                // Forward relationship from query to next query
+                srcObj[forwardRelationshipName].push(obj);
+                // Reverse relationship to previous query
+                obj[reverseRelationshipName].push(srcObj);
+              }
+            });
+          }
 
           // Set the trees (for hierarchical, recursive queries)
           trees[queryIndex] = queryJSONResponse.results[queryIndex].tree;
