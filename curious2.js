@@ -455,7 +455,7 @@
      * @param {Array[]} queryData.objects
      *   An array of arrays, where each array is the values of a single object's
      *   properties, in the order specified by queryData.fields
-     * @param {string[]} queryData.url The url of every object, if any
+     * @param {string[]} queryData.urls The url of every object, if they have one
      * @param {string} model The name of the Django model these objects come
      *                       from.
      * @param {function} customConstructor A constructor to use instead of the
