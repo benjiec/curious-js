@@ -475,6 +475,38 @@ describe('CuriousObjects', function () {
         }
       );
     });
+
+    it('should construct objects correctly with custom constructors', function () {
+      var constructors;
+      var parsedData;
+
+      // Fake constructors
+      function Experiment() {
+        // Do nothing
+      }
+
+      function Reaction() {
+        // Do nothing
+      }
+
+      constructors = [Experiment, Reaction];
+
+      parsedData = curious.CuriousObjects.parse(
+        ['experiments', 'reactions'],
+        constructors,
+        queryJSONResponse
+      );
+
+      parsedData.objects.forEach(function (objectsByID, ix) {
+        var objects = curious.CuriousObjects.values(objectsByID);
+
+        objects.forEach(function (object) {
+          assert(object instanceof constructors[ix]);
+        });
+      });
+    });
+
+
   });
 });
 
