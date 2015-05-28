@@ -1,4 +1,4 @@
-// mocha.js tests for the functions in Curious
+// mocha.js tests for functions dealing with Curious objects
 (function () {
 'use strict';
 
