@@ -2,7 +2,7 @@
 (function () {
 'use strict';
 
-var assert = require('assert');
+var assert = require('chai').assert;
 var curious = require('../curious2.js');
 
 // HELPER METHODS
@@ -299,7 +299,8 @@ describe('CuriousObjects', function () {
     it('should contain all of the IDs', function () {
       assert.deepEqual(
         Object.keys(curious.CuriousObjects.groupObjectsByID(objs)).sort(),
-        [1, 2, 3]
+        // Ids used as keys are always strings.
+        objs.map(function (obj) { return String(obj.id); })
       );
     });
 
@@ -404,6 +405,10 @@ describe('CuriousObjects', function () {
   describe('#idString', function () {
     var objs;
 
+    function _parseToNumbers(idString) {
+      return idString.split(',').map(function (id) {return Number(id);});
+    }
+
     beforeEach(function () {
       objs = [
         {name: 'a', id: 1},
@@ -414,7 +419,7 @@ describe('CuriousObjects', function () {
 
     it('should be equivalent to idList', function () {
       assert.deepEqual(
-        curious.CuriousObjects.idString(objs).split(','),
+        _parseToNumbers(curious.CuriousObjects.idString(objs)),
         curious.CuriousObjects.idList(objs)
       );
 
@@ -427,7 +432,7 @@ describe('CuriousObjects', function () {
       objs.push({name: 'f', id: 23});
 
       assert.deepEqual(
-        curious.CuriousObjects.idString(objs).split(','),
+        _parseToNumbers(curious.CuriousObjects.idString(objs)),
         curious.CuriousObjects.idList(objs)
       );
     });
@@ -436,8 +441,9 @@ describe('CuriousObjects', function () {
       objs.push({name: 'commas', id: '4,5,6'});
 
       assert.deepEqual(
-        // 1, 2, 3, 4, 5, 6
-        curious.CuriousObjects.idString(objs).split(','),
+        // 1, 2, 3, 4, 5, 6, converted to numbers
+        _parseToNumbers(curious.CuriousObjects.idString(objs)),
+
         // Remove the element we added ('4,5,6') and add 4, 5, 6 to the end
         curious.CuriousObjects.idList(objs).slice(0, -1).concat([4, 5, 6])
       );
