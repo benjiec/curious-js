@@ -1,4 +1,6 @@
 // mocha.js tests for the functions in Curious
+(function () {
+'use strict';
 
 var assert = require('assert');
 var curious = require('../curious2.js');
@@ -469,3 +471,5 @@ describe('CuriousObjects', function () {
     });
   });
 });
+
+}());
