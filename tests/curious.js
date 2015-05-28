@@ -2,7 +2,7 @@
 (function () {
 'use strict';
 
-var assert = require('chai').assert;
+var expect = require('chai').expect;
 var curious = require('../curious2.js');
 
 // HELPER METHODS
@@ -239,9 +239,8 @@ describe('CuriousObjects', function () {
     });
 
     it('should return all of the values of an object', function () {
-      assert.deepEqual(
-        curious.CuriousObjects.values(obj).sort(),
-        [obj.a, obj.b, obj.c, obj.d, obj.e].sort()
+      expect(curious.CuriousObjects.values(obj)).to.have.deep.members(
+        [obj.a, obj.b, obj.c, obj.d, obj.e]
       );
     });
 
@@ -254,7 +253,7 @@ describe('CuriousObjects', function () {
           valuesInOrder.push(obj[key]);
         }
       }
-      assert.deepEqual(curious.CuriousObjects.values(obj), valuesInOrder);
+      expect(curious.CuriousObjects.values(obj)).to.deep.equal(valuesInOrder);
     });
 
     it('should maintain only complex references', function () {
@@ -275,9 +274,9 @@ describe('CuriousObjects', function () {
       });
 
       // Simple references do not change
-      assert.strictEqual(obj.a, 1);
+      expect(obj.a).to.equal(1);
       // Complex references do change
-      assert.strictEqual(obj.d['4'], 'something');
+      expect(obj.d['4']).to.equal('something');
     });
   });
 
@@ -293,30 +292,13 @@ describe('CuriousObjects', function () {
     });
 
     it('should return an object', function () {
-      assert(curious.CuriousObjects.groupObjectsByID(objs) instanceof Object);
+      expect(curious.CuriousObjects.groupObjectsByID(objs)).to.be.an('object');
     });
 
     it('should contain all of the IDs', function () {
-      assert.deepEqual(
-        Object.keys(curious.CuriousObjects.groupObjectsByID(objs)).sort(),
-        // Ids used as keys are always strings.
-        objs.map(function (obj) { return String(obj.id); })
+      expect(curious.CuriousObjects.groupObjectsByID(objs)).to.have.all.keys(
+        {'1': objs[0], '2': objs[1], '3': objs[2]}
       );
-    });
-
-    it('should contain all of the objects', function () {
-      assert.deepEqual(
-        curious.CuriousObjects.values(curious.CuriousObjects.groupObjectsByID(objs)).sort(),
-        objs.sort()
-      );
-    });
-
-    it('should match the objects by their IDs', function () {
-      var objsByID = curious.CuriousObjects.groupObjectsByID(objs);
-
-      objs.forEach(function (obj) {
-        assert.strictEqual(obj, objsByID[obj.id]);
-      });
     });
 
     it('should maintain only complex references', function () {
@@ -328,10 +310,9 @@ describe('CuriousObjects', function () {
       objsByID[2].name = 'broop'; // objs[1]
 
       // Simple references do not change
-      assert.strictEqual(JSON.stringify(objs[0]), JSON.stringify({name: 'a', id: 1}));
+      expect(objs[0]).to.have.all.keys({name: 'a', id: 1});
       // Complex references do change
-      assert.strictEqual(JSON.stringify(objs[1]), JSON.stringify({name: 'broop', id: 2}));
-
+      expect(objs[1]).to.have.all.keys({name: 'broop', id: 2});
     });
 
     it('should take the last object in the arary in case of duplicate IDs', function () {
@@ -340,7 +321,7 @@ describe('CuriousObjects', function () {
       objs.push({name: 'b2', id: 2});
       objsByID = curious.CuriousObjects.groupObjectsByID(objs);
 
-      assert.strictEqual(objsByID[2].name, 'b2');
+      expect(objsByID[2]).to.have.property('name', 'b2');
     });
 
     it('should ignore objects without IDs', function () {
@@ -353,7 +334,7 @@ describe('CuriousObjects', function () {
 
       objsByIDWithNoID = curious.CuriousObjects.groupObjectsByID(objs);
 
-      assert.deepEqual(objsByID, objsByIDWithNoID);
+      expect(objsByID).to.deep.equal(objsByIDWithNoID);
     });
 
   });
@@ -370,19 +351,13 @@ describe('CuriousObjects', function () {
     });
 
     it('should contain all of the IDs', function () {
-      assert.deepEqual(
-        curious.CuriousObjects.idList(objs).sort(),
-        [1, 2, 3]
-      );
+      expect(curious.CuriousObjects.idList(objs)).to.have.members([1, 2, 3]);
     });
 
     it('should not contain duplicates', function () {
       objs.push({name: 'b2', id: 2});
 
-      assert.deepEqual(
-        curious.CuriousObjects.idList(objs).sort(),
-        [1, 2, 3]
-      );
+      expect(curious.CuriousObjects.idList(objs)).to.have.members([1, 2, 3]);
     });
 
     it('should maintain the order of IDs and keep the first unique one', function () {
@@ -395,10 +370,7 @@ describe('CuriousObjects', function () {
       objs.push({name: 'b3', id: 2});
       objs.push({name: 'f', id: 23});
 
-      assert.deepEqual(
-        curious.CuriousObjects.idList(objs),
-        [1, 2, 3, 4, 0, 23]
-      );
+      expect(curious.CuriousObjects.idList(objs)).to.deep.equal([1, 2, 3, 4, 0, 23]);
     });
   });
 
@@ -418,8 +390,7 @@ describe('CuriousObjects', function () {
     });
 
     it('should be equivalent to idList', function () {
-      assert.deepEqual(
-        _parseToNumbers(curious.CuriousObjects.idString(objs)),
+      expect(_parseToNumbers(curious.CuriousObjects.idString(objs))).to.deep.equal(
         curious.CuriousObjects.idList(objs)
       );
 
@@ -431,8 +402,7 @@ describe('CuriousObjects', function () {
       objs.push({name: 'b3', id: 2});
       objs.push({name: 'f', id: 23});
 
-      assert.deepEqual(
-        _parseToNumbers(curious.CuriousObjects.idString(objs)),
+      expect(_parseToNumbers(curious.CuriousObjects.idString(objs))).to.deep.equal(
         curious.CuriousObjects.idList(objs)
       );
     });
@@ -440,10 +410,10 @@ describe('CuriousObjects', function () {
     it('should not escape commas', function () {
       objs.push({name: 'commas', id: '4,5,6'});
 
-      assert.deepEqual(
+      expect(
         // 1, 2, 3, 4, 5, 6, converted to numbers
-        _parseToNumbers(curious.CuriousObjects.idString(objs)),
-
+        _parseToNumbers(curious.CuriousObjects.idString(objs))
+      ).to.deep.equal(
         // Remove the element we added ('4,5,6') and add 4, 5, 6 to the end
         curious.CuriousObjects.idList(objs).slice(0, -1).concat([4, 5, 6])
       );
@@ -460,12 +430,11 @@ describe('CuriousObjects', function () {
     it('should correctly parse the output', function () {
       var expectedObjects = _expectedObjects();
 
-      assert.deepEqual(
-        curious.CuriousObjects.parse(
-          ['experiments', 'reactions'],
-          null,
-          queryJSONResponse
-        ),
+      expect(curious.CuriousObjects.parse(
+        ['experiments', 'reactions'],
+        null,
+        queryJSONResponse
+      )).to.deep.equal(
         {
           trees: [null, null],
           objects: [
@@ -501,9 +470,10 @@ describe('CuriousObjects', function () {
         var objects = curious.CuriousObjects.values(objectsByID);
 
         objects.forEach(function (object) {
-          assert(object instanceof constructors[ix]);
+          expect(object).to.be.an.instanceof(constructors[ix]);
         });
       });
+
     });
 
 
