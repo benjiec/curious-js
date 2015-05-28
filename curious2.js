@@ -12,6 +12,7 @@
  *
  */
 (function () {
+  'use strict';
   // QUERY TERMS
 
   /**
@@ -20,7 +21,7 @@
    * @abstract
    * @class
    */
-  function _QueryTerm(term) {
+  function QueryTerm(term) {
     /** The term contents @readonly @public */
     this.term = function () { return term; };
 
@@ -36,7 +37,7 @@
    *
    * @return {string} The term contents, formatted.
    */
-  _QueryTerm.prototype.toString = function () { return this.term(); };
+  QueryTerm.prototype.toString = function () { return this.term(); };
 
   /**
    * Determine whether or not the terms sticks implicit joins into adjacent
@@ -47,21 +48,21 @@
    *
    * @return {boolean} True if the term implicitly joins with its following term
    */
-  _QueryTerm.prototype.implicitJoin = function () { return true; };
+  QueryTerm.prototype.implicitJoin = function () { return true; };
 
 
   /**
    * Make a term that follows the query chain.
    *
    * @class
-   * @extends {_QueryTerm}
+   * @extends {QueryTerm}
    */
   var QueryTermFollow = function (term) {
-    _QueryTerm.call(this, term);
+    QueryTerm.call(this, term);
 
     return this;
   };
-  QueryTermFollow.prototype = new _QueryTerm();
+  QueryTermFollow.prototype = new QueryTerm();
 
   /** @override */
   QueryTermFollow.prototype.implicitJoin = function () { return false; };
@@ -71,14 +72,14 @@
    * Make a term that performs a filter.
    *
    * @class
-   * @extends {_QueryTerm}
+   * @extends {QueryTerm}
    */
   var QueryTermHaving = function (term) {
-    _QueryTerm.call(this, term);
+    QueryTerm.call(this, term);
 
     return this;
   };
-  QueryTermHaving.prototype = new _QueryTerm();
+  QueryTermHaving.prototype = new QueryTerm();
 
   /** @override */
   QueryTermHaving.prototype.toString = function () {
@@ -89,14 +90,14 @@
    * Make a term that performs a negative filter.
    *
    * @class
-   * @extends {_QueryTerm}
+   * @extends {QueryTerm}
    */
   var QueryTermNotHaving = function (term) {
-    _QueryTerm.call(this, term);
+    QueryTerm.call(this, term);
 
     return this;
   };
-  QueryTermNotHaving.prototype = new _QueryTerm();
+  QueryTermNotHaving.prototype = new QueryTerm();
 
   /** @override */
   QueryTermNotHaving.prototype.toString = function () {
@@ -107,14 +108,14 @@
    * Make a term that performs an outer join.
    *
    * @class
-   * @extends {_QueryTerm}
+   * @extends {QueryTerm}
    */
   var QueryTermWith = function (term) {
-    _QueryTerm.call(this, term);
+    QueryTerm.call(this, term);
 
     return this;
   };
-  QueryTermWith.prototype = new _QueryTerm();
+  QueryTermWith.prototype = new QueryTerm();
 
   /** @override */
   QueryTermWith.prototype.toString = function () {
@@ -253,7 +254,7 @@
    * QueryTerm classes.
    *
    * @private
-   * @param {_QueryTerm} termObject A QueryTerm object to append to the term
+   * @param {QueryTerm} termObject A QueryTerm object to append to the term
    * @param {string} relationship The name of this term in inter-term
    *                              relationships.
    * @param {function} [constructor] A custom constructor for the resulting
@@ -460,13 +461,13 @@
      * @param {string[]} queryData.urls The url of every object, if they have one
      * @param {string} model The name of the Django model these objects come
      *                       from.
-     * @param {function} customConstructor A constructor to use instead of the
+     * @param {function} CustomConstructor A constructor to use instead of the
      *                                     default CuriousObject constructor.
      *
-     * @return {(CuriousObject|customConstructor)[]}
+     * @return {(CuriousObject|CustomConstructor)[]}
      * An array of objects, which contain the data described in queryData.
      */
-    function _parseObjects(queryData, model, customConstructor) {
+    function _parseObjects(queryData, model, CustomConstructor) {
       var objects = [];
 
       if (queryData.objects instanceof Array) {
@@ -481,8 +482,8 @@
             objectData[fieldName] = objectDataArray[fieldIndex];
           });
 
-          if (customConstructor) {
-            obj = new customConstructor(objectData);
+          if (CustomConstructor) {
+            obj = new CustomConstructor(objectData);
 
             // We can't be sure that the custom constructor that was passed in
             // got all the fields assigned, so we should do it ourselves just
