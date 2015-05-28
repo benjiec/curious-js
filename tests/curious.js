@@ -476,6 +476,40 @@ describe('CuriousObjects', function () {
 
     });
 
+    it('should combine new objects with existing ones', function () {
+      var parsedData;
+      // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+      var existingObjects = [
+        null,
+        {
+          23063: {
+            id: 23063,
+            created_by_id: 12345,
+            created_on: 'another date',
+            updated_by_id: 67890,
+            updated_on: 'another time',
+            experiment_id: 403,
+            is_blank: false,
+            is_control: false,
+            notes: '',
+            sample_id: 124816,
+            __url: 'http://example.com/experiment/403/',
+            __model: 'Reaction',
+            __dirty: false,
+          }
+        },
+      ];
+      // jscs:enable
+
+      parsedData = curious.CuriousObjects.parse(
+        ['experiments', 'reactions'],
+        null,
+        queryJSONResponse,
+        existingObjects
+      );
+
+      expect(parsedData.objects[1][23063]).to.contain.keys(existingObjects[1][23063]);
+    });
 
   });
 });
