@@ -844,16 +844,18 @@
    * @public
    *
    * @param {string} curiousURL The URL of the Curious server
-   * @param {Object} requestClient An angular-compatible http transport layer, which
-   *                      supports a .post method, such as jQuery's xhr
-   *                      facilities, or axios. Must return a promise.
+   * @param {function (string, object): Promise} request
+   *  A function that makes a POST request and returns a promise (a thenable).
+   *  Examples are jQuery.post, axios.post, and Angular's $http.post. Any
+   *  function that meets the signature, makes a POST request, and returns a
+   *  thenable will work.
    * @param {Object} appDefaultArgs Default parameters to send to the serever
    *                                with every query performed by this client.
    * @param {boolean} quiet Unless true, log every query to the console.
    *
    * @return {Object} A client object with a single get method.
    */
-  var CuriousClient = function (curiousURL, requestClient, appDefaultArgs, quiet) {
+  var CuriousClient = function (curiousURL, request, appDefaultArgs, quiet) {
 
     /**
      * Perform a Curious query and return back parsed objects.
@@ -887,8 +889,7 @@
       args = _getArgs(params, appDefaultArgs);
       args.q = q;
 
-      return requestClient
-        .post(curiousURL, args)
+      return request(curiousURL, args)
         .then(function (response) {
           var parsedResult = CuriousObjects.parse(
             relationships, constructors, response.result, existingObjects

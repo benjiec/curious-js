@@ -207,7 +207,6 @@ function _expectedObjects() {
   exp.reactions = rxns;
   rxns.forEach(function (rxn) { rxn.experiments = [exp]; });
 
-
   return {
     experiments: {
       403: exp
