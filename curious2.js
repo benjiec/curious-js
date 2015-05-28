@@ -361,7 +361,7 @@
    * Set the existing objects that this query will use to link the returned
    * objects into.
    *
-   * @param objs {Object[][]} The existing objects to set
+   * @param {Object[]} objs The existing objects to set
    *
    * @return {CuriousQuery} The query object with its existing object set
    *                        updated.
@@ -464,7 +464,7 @@
      * @param {function} CustomConstructor A constructor to use instead of the
      *                                     default CuriousObject constructor.
      *
-     * @return {(CuriousObject|CustomConstructor)[]}
+     * @return {Array<CuriousObject|CustomConstructor>}
      * An array of objects, which contain the data described in queryData.
      */
     function _parseObjects(queryData, model, CustomConstructor) {
@@ -545,7 +545,7 @@
      *   An array of objects containing the other fields of the Django objects,
      *   more than just the IDs. @see _parseObjects for a description of this
      *   data in the queryData parameter.
-     * @param {Object<number,Object>[]} existingObjects
+     * @param {Array<Object<number,Object>>} existingObjects
      *   The existing objects. Each object in the array is a mapping of an id
      *   to its corresponding object.
      *
@@ -759,9 +759,7 @@
    * where each array of objects is named by its appropriate relationship name.
    *
    * @param {string[]} relationships The relationship names
-   * @param {Array<Object>[]} objects An array of arrays of objects that
-   *                                  contains the objects from each
-   *                                  relationship.
+   * @param {Array<Array<Object>>} objects The objects from each relationship.
    *
    * @return {Object<string,Array>}
    */
@@ -820,13 +818,15 @@
   }
 
   /**
-   * In an array of array of objects, group the arrays by ID.
+   * In an array of array of objects, group each of the arrays by ID.
    *
    * @private
    *
-   * @param {Array<Object>[]} arrayOfArraysOfObjects The input array.
+   * @param {Aray<Array<Object>>} arrayOfArraysOfObjects
+   *   An array of arrays to group.
    *
-   * @return {{id: Object}[]} The output: an array of objects grouped by ID.
+   * @return {Array<Object>} Each object corresponds to its array above, but now
+   *                         grouped by ID.
    */
   function _groupArraysOfObjectsByID(arrayOfArraysOfObjects) {
     return arrayOfArraysOfObjects.map(function (arrayOfObjects) {
@@ -845,7 +845,7 @@
    * @public
    *
    * @param {string} curiousURL The URL of the Curious server
-   * @param {function (string, object): Promise} request
+   * @param {function (string, Object): Promise} request
    *  A function that makes a POST request and returns a promise (a thenable).
    *  Examples are jQuery.post, axios.post, and Angular's $http.post. Any
    *  function that meets the signature, makes a POST request, and returns a
@@ -868,9 +868,9 @@
      *                                        custom classes, or null for the
      *                                        default.
      * @param {Object} params Query-specific parameters for the request.
-     * @param {Array<Object>[]} existingObjects Objects that already exist to be
-     *                                          linked into the results returned
-     *                                          by this query.
+     * @param {Array<Array<Object>>} existingObjects
+     *   Objects that already exist to be linked into the results returned by
+     *   this query.
      *
      * @return {Promise} A promise that resolves to an object:
      *                   {objects: the fully parsed objects,

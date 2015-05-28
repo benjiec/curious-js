@@ -1,0 +1,2 @@
+#!/bin/sh
+jsdoc --private curious2.js -d doc
