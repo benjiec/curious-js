@@ -131,7 +131,6 @@
       }
       this.__url = null;
       this.__model = null;
-      this.__dirty = false;
     }
 
     function parse_objects(data, model, obj_f, existing_objs) {
@@ -214,7 +213,7 @@
           var src = join_src[obj_src[1]];
           if (obj_src[0]) {
             var obj = join_obj[obj_src[0]];
-            if (obj && src) {
+            if (src && obj) {
               // forward relationship from query to next query
               src[rel].push(obj);
               // reverse relationship
