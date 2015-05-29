@@ -1,2 +1,3 @@
-#!/bin/sh
-jsdoc --private curious2.js -d doc
+#!/bin/bash
+mkdir -p doc
+jsdoc --destination doc curious2.js "$@"

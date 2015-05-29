@@ -1,15 +1,7 @@
-/**
+/***
  * Module for curious client-side query construction and JSON parsing.
  *
  * @module curious
- *
- * @exports CuriousObjects Tools for dealing with Curious objects
- *
- * @exports CuriousClient Performs curious queries, given a client, and deals
- *                        with the callbacks
- *
- * @exports CuriousQuery Class for constructiong curious queries.
- *
  */
 (function () {
   'use strict';
@@ -18,21 +10,27 @@
   /**
    * Abstract base class for query terms.
    *
+   * @private
    * @abstract
    * @class
+   * @alias module:curious~QueryTerm
+   *
+   * @param {string} term The internal term text to use.
    */
-  function QueryTerm(term) {
-    /** The term contents @readonly @public */
+  var QueryTerm = function (term) {
+    /** The term contents
+    * @readonly
+    * @public
+    */
     this.term = function () { return term; };
 
     return this;
-  }
+  };
 
   /**
    * Return the term contents as they belong in a query, wrapped with parens and
    * other operators
    *
-   * @readonly
    * @public
    *
    * @return {string} The term contents, formatted.
@@ -43,10 +41,11 @@
    * Determine whether or not the terms sticks implicit joins into adjacent
    * terms.
    *
-   * @readonly
    * @public
    *
-   * @return {boolean} True if the term implicitly joins with its following term
+   * @return {boolean}
+   *   True if the term implicitly joins with its following term. True by
+   *   default.
    */
   QueryTerm.prototype.implicitJoin = function () { return true; };
 
@@ -54,8 +53,10 @@
   /**
    * Make a term that follows the query chain.
    *
+   * @private
    * @class
-   * @extends {QueryTerm}
+   * @extends {module:curious~QueryTerm}
+   * @alias module:curious~QueryTermFollow
    */
   var QueryTermFollow = function (term) {
     QueryTerm.call(this, term);
@@ -64,15 +65,20 @@
   };
   QueryTermFollow.prototype = new QueryTerm();
 
-  /** @override */
+  /**
+   * Does not implicitly join.
+   * @override
+   */
   QueryTermFollow.prototype.implicitJoin = function () { return false; };
 
 
   /**
    * Make a term that performs a filter.
    *
+   * @private
    * @class
-   * @extends {QueryTerm}
+   * @extends {module:curious~QueryTerm}
+   * @alias module:curious~QueryTermHaving
    */
   var QueryTermHaving = function (term) {
     QueryTerm.call(this, term);
@@ -81,7 +87,6 @@
   };
   QueryTermHaving.prototype = new QueryTerm();
 
-  /** @override */
   QueryTermHaving.prototype.toString = function () {
     return '+(' + this.term() + ')';
   };
@@ -90,7 +95,7 @@
    * Make a term that performs a negative filter.
    *
    * @class
-   * @extends {QueryTerm}
+   * @extends {module:curious~QueryTerm}
    */
   var QueryTermNotHaving = function (term) {
     QueryTerm.call(this, term);
@@ -99,7 +104,6 @@
   };
   QueryTermNotHaving.prototype = new QueryTerm();
 
-  /** @override */
   QueryTermNotHaving.prototype.toString = function () {
     return '-(' + this.term() + ')';
   };
@@ -107,8 +111,10 @@
   /**
    * Make a term that performs an outer join.
    *
+   * @private
    * @class
-   * @extends {QueryTerm}
+   * @extends {module:curious~QueryTerm}
+   * @alias module:curious~QueryTermWith
    */
   var QueryTermWith = function (term) {
     QueryTerm.call(this, term);
@@ -117,7 +123,6 @@
   };
   QueryTermWith.prototype = new QueryTerm();
 
-  /** @override */
   QueryTermWith.prototype.toString = function () {
     return '?(' + this.term() + ')';
   };
@@ -126,34 +131,48 @@
   // QUERY OBJECT
 
   /**
-   * Make a Curious query from constituent parts, using a chain of method
-   * calls to a single object.
+   * <p>Make a Curious query from constituent parts, using a chain of method
+   * calls to a single object.</p>
    *
-   * CuriousQuery objects are an object-based representation of a Curious query
-   * string to make passing around parts of a query and assembling queries
-   * easier.
+   * <p>CuriousQuery objects are an object-based representation of a Curious
+   * query string to make passing around parts of a query and assembling
+   * queries easier.</p>
    *
-   * The result of curious queries will be an object containing arrays of
+   * <p>The result of curious queries will be an object containing arrays of
    * objects, as specified in the Curious query. This would be analogous to what
-   * a Django QuerySet might look like on the back end.
+   * a Django QuerySet might look like on the back end.</p>
    *
-   * If there is more than one kind of object returned by the query and the
+   * <p>If there is more than one kind of object returned by the query and the
    * query specifies some kind of relationship between the data in the objects
    * (for example, Reactions that have Datasets), the returned objects will have
    * attributes that point to their related objects. The names of these
-   * relationships are provided as a user-specified parameter.
+   * relationships are provided as a user-specified parameter.</p>
    *
-   * You construct CuriousQuery objects with a repeated chain of function calls
-   * on a core object, CuriousQuery object, much like in jQuery, or _.chain().
-   * Every stage of the chain specifies a new term in the query, and a
-   * relationship name as a string. The stages can also take an optional third
-   * parameter that will specify the class of the constructed objects; (insead
-   * of just CuriousObject).
+   * <p>You construct CuriousQuery objects with a repeated chain of function
+   * calls on a core object, CuriousQuery object, much like in jQuery, or
+   * <code>_.chain()</code>. Every stage of the chain specifies a new term in
+   * the query, and a relationship name as a string. The stages can also take
+   * an optional third parameter that will specify the class of the constructed
+   * objects (insead of just <code>CuriousObject</code>).</p>
    *
-   * The initial Curious term happens either by passing parameters directly to
-   * the construtor, or by calling .start().
+   * <p>The initial Curious term happens either by passing parameters directly
+   * to the construtor, or by calling <code>.start()</code>.</p>
+   *
+   * @class
+   * @alias module:curious.CuriousQuery
+   *
+   * @param {string} [initialTermString]
+   *   The string for the starting term
+   * @param {string} [initialRelationship]
+   *   The starting term's relationship
+   * @param {function} [initialObjectClass]
+   *   A custom object class constructor for the starting term
+   *
+   * @return {CuriousQuery} The newly constructed object.
+   *
    *
    * @example
+   * // Explicitly set start, wrapWith classes
    * var q = (new CuriousQuery).
    *   .start('Experiment(id=302)', 'experiment')
    *   .follow('Experiment.reaction_set', 'reactions')
@@ -165,21 +184,12 @@
    *    + 'Reaction.dataset_set, Dataset.attachment_set';
    *
    * @example
-   * // Terser version
+   * // Terser version of the same query above
    * var q = new CuriousQuery('Experiment(id=302)', 'experiment')
    *   .follow('Experiment.reaction_set', 'reactions')
    *   .with('Reaction.dataset_set', 'dataset', Dataset)
    *   .follow('Dataset.attachment_set');
    *
-   * @class
-   *
-   * @param {string} [initialTermString] The string for the starting term
-   * @param {string} [initialRelationship] The starting term's relationship
-   * @param {function} [initialObjectClass] A custom object class constructor
-   *                                        for the starting term
-   *
-   *
-   * @return {CuriousQuery} The newly constructed object.
    */
   var CuriousQuery = function (
     initialTermString, initialRelationship, initialObjectClass
@@ -198,7 +208,7 @@
   };
 
   /**
-   * Return the constructed query string represented by this object.
+   * Generate the constructed query string represented by this object.
    *
    * @return {string} The fully constructed query.
    */
@@ -248,29 +258,30 @@
   };
 
   /**
-   * Append another term to this query: generic method.
+   * <p>Append another term to this query: generic method.</p>
    *
-   * Consumers should not use this method, as they do not have access to the
-   * QueryTerm classes.
+   * <p>Consumers should not use this method, as they do not have access to the
+   * {@link module:curious~QueryTerm} classes.</p>
    *
    * @private
-   * @param {QueryTerm} termObject A QueryTerm object to append to the term
-   * @param {string} relationship The name of this term in inter-term
-   *                              relationships.
-   * @param {function} [constructor] A custom constructor for the resulting
-   *                                 objects, if this part of the query returns
-   *                                 new objects.
+   * @param {QueryTerm} termObject
+   *   A {@link module:curious~QueryTerm} object to append to the term
+   * @param {string} relationship
+   *   The name of this term in inter-term relationships
+   * @param {function} [customConstructor]
+   *   A custom constructor for the resulting objects, if this part of the
+   *   query returns new objects
    *
-   * @return {CuriousQuery} The query with the term appended.
+   * @return {CuriousQuery} The query object, with the term appended
    */
   CuriousQuery.prototype._append = function (
-    termObject, relationship, constructor
+    termObject, relationship, customConstructor
   ) {
     this.terms.push(term);
     this.relationships.push(relationship);
 
-    if (constructor) {
-      this.objectFactories.push(_makeObjectFactory(constructor));
+    if (customConstructor) {
+      this.objectFactories.push(_makeObjectFactory(customConstructor));
     }
 
     return this;
@@ -280,44 +291,87 @@
    * Add a starting term to this query. Equivalent to passing parameters
    * directly to the constructor.
    *
-   * @see _append
+   * @param {string} termString
+   *   The contents of the starting term.
+   * @param {string} relationship
+   *   The name of this term in inter-term relationships
+   * @param {function} [customConstructor]
+   *   A custom constructor for the resulting objects, if this part of the
+   *   query returns new objects
+   *
+   * @return {CuriousQuery} The query object, with the term appended
    */
-  CuriousQuery.prototype.start = function (termString, relationship, constructor) {
-    return this._append(new QueryTermFollow(termString), relationship, constructor);
+  CuriousQuery.prototype.start = function (termString, relationship, customConstructor) {
+    return this._append(new QueryTermFollow(termString), relationship, customConstructor);
   };
 
-  /** Add an inner-join term to this query. @see _append */
+  /** Add an inner-join term to this query.
+   *
+   * @param {string} termString
+   *   The contents of the starting term.
+   * @param {string} relationship
+   *   The name of this term in inter-term relationships
+   *
+   * @return {CuriousQuery} The query object, with the term appended
+   */
   CuriousQuery.prototype.follow = function (termString, relationship) {
     return this._append(new QueryTermFollow(termString), relationship);
   };
 
-  /** Add a filter term to this query. @see _append */
+  /** Add a filter term to this query.
+   *
+   * @param {string} termString
+   *   The contents of the starting term.
+   * @param {string} relationship
+   *   The name of this term in inter-term relationships
+   *
+   * @return {CuriousQuery} The query object, with the term appended
+   */
   CuriousQuery.prototype.having = function (termString, relationship) {
     return this._append(new QueryTermHaving(termString), relationship);
   };
 
-  /** Add an exclude filter term to this query. @see _append */
+  /** Add an exclude filter term to this query.
+   *
+   * @param {string} termString
+   *   The contents of the starting term.
+   * @param {string} relationship
+   *   The name of this term in inter-term relationships
+   *
+   * @return {CuriousQuery} The query object, with the term appended
+   */
   CuriousQuery.prototype.notHaving = function (termString, relationship) {
     return this._append(new QueryTermNotHaving(termString), relationship);
   };
 
-  /** Add an outer-join term to this query. @see _append */
-  CuriousQuery.prototype.with = function (termString, relationship, constructor) {
-    return this._append(new QueryTermWith(termString), relationship, constructor);
+  /** Add an outer-join term to this query.
+   *
+   * @param {string} termString
+   *   The contents of the starting term.
+   * @param {string} relationship
+   *   The name of this term in inter-term relationships
+   * @param {function} [customConstructor]
+   *   A custom constructor for the resulting objects, if this part of the
+   *   query returns new objects
+   *
+   * @return {CuriousQuery} The query object, with the term appended
+   */
+  CuriousQuery.prototype.with = function (termString, relationship, customConstructor) {
+    return this._append(new QueryTermWith(termString), relationship, customConstructor);
   };
 
   /**
    * Specify the object constructor to use for the preceding term in the query.
    *
-   * @param {function} curiousObjectClass A constructor to use when
-   *                                      instantiating objects from the
-   *                                      previous part of the query
+   * @param {function} customConstructor
+   *   A constructor to use when instantiating objects from the previous part of
+   *   the query
    *
-   * @return {CuriousQuery} The query object, with the new constructor data
-   *                        stored internally
+   * @return {CuriousQuery}
+   *   The query object, with the new constructor data stored internally
    */
-  CuriousQuery.prototype.wrapWith = function (curiousObjectClass) {
-    return this.wrapDynamically(_makeObjectFactory(curiousObjectClass));
+  CuriousQuery.prototype.wrapWith = function (customConstructor) {
+    return this.wrapDynamically(_makeObjectFactory(customConstructor));
   };
 
   /**
@@ -326,11 +380,11 @@
    * constructors that do not return a value by default, this will only work
    * with factory functions that explicitly return an object.
    *
-   * @param {function} factoryFunction  A factory function that returns an
-   *                                    object of the desired wrapping class.
+   * @param {function (Object): Object} factoryFunction
+   *   A factory function that returns an object of the desired wrapping class.
    *
-   * @return {CuriousQuery} The query object, with the new constructor data
-   *                        stored internally
+   * @return {CuriousQuery}
+   *   The query object, with the new constructor data stored internally
    */
   CuriousQuery.prototype.wrapDynamically = function (factoryFunction) {
     if (this.objectFactories.length) {
@@ -346,11 +400,13 @@
    * Set the parameters that this query will pass to its curious client when
    * perform is called.
    *
-   * @param {Object} params An object of parameters to set. See the CuriousQ
-   *                        documentation for a full description of these.
+   * @param {Object} params
+   *   An object of parameters to set. See
+   *   {@link module:curious.CuriousClient#get} for a full description of the
+   *   parameters.
    *
-   * @return {CuriousQuery} The query object with its curious client parameters
-   *                        updated.
+   * @return {CuriousQuery}
+   *   The query object with its curious client parameters updated.
    */
   CuriousQuery.prototype.setParams = function (params) {
     this.params = params;
@@ -375,21 +431,18 @@
    * Perform the query using a passed-in Curious client, such as jQuery's ajax,
    * or any other client that has asynchronous get/post request methods.
    *
-   * @param {CuriousQ} A a Curious client object that will handle performing the
-   *                   actual query.
+   * @param {CuriousClient} curiousClient
+   *   A CuriousClient object that will handle performing the actual query.
    *
-   * XXX change this?
+   * @return {Promise}
+   *   A promise, as returned by {@link module:curious.CuriousClient#get}
    *
-   * @return {promise} A promise XXX not implemented yet
    */
-  CuriousQuery.prototype.perform = function (
-    curiousClient, objectsCallback, treesCallback
-  ) {
+  CuriousQuery.prototype.perform = function (curiousClient) {
     var q = this.query();
 
     return curiousClient.get(
-      q, this.relationships, this.objectFactories, this.params, this.existingObjects,
-      objectsCallback, treesCallback
+      q, this.relationships, this.objectFactories, this.params, this.existingObjects
     );
   };
 
@@ -399,32 +452,43 @@
    * be called with `new` or not.
    *
    * @private
-   * @param {function} objectClass The constructor that will be called with the
-   *                               new keyword to construct the object.
-   * @param {Object[]} constructorArgs An array of additional arguments that
-   *                                   will be passed to the constructor.
+   *
+   * @param {function} customConstructor
+   *   The constructor that will be called with the new keyword to construct
+   *   the object.
+   * @param {Object[]} constructorArgs
+   *   An array of additional arguments that will be passed to the constructor.
    *
    * @return {function} A factory function that will return a new object
    *                    whenever called.
    */
-  function _makeObjectFactory(objectClass, constructorArgs) {
+  function _makeObjectFactory(customConstructor, constructorArgs) {
     return function () {
-      return new objectClass.call({}, constructorArgs);
+      return new customConstructor.call({}, constructorArgs);
     };
   }
 
 
   // CURIOUS OBJECTS
 
-  /** Utilities for dealing with curious objects @namespace */
+  /**
+   * Utilities for dealing with curious objects
+   * @namespace
+   * @alias module:curious.CuriousObjects
+   */
   var CuriousObjects = (function () {
 
     /**
      * Base (default) class for an object returned from a Curious query
      *
-     * @param {Object} objectData A plain JavaScript object representing the
-     *                            query data, as parsed from the returned JSON.
+     * @private
      * @class
+     * @memberof module:curious.CuriousObjects
+     *
+     * @param {Object} objectData
+     *   A plain JavaScript object representing the query data, as parsed from
+     *   the returned JSON.
+     *
      */
     function CuriousObject(objectData) {
       var newObject = this;
@@ -449,23 +513,26 @@
      * makes the data much more reasonable to work with.
      *
      * @private
+     * @memberof module:curious.CuriousObjects
      *
      * @param {Object<string,Array>} queryData
      *   A plain JavaScript object representing the query data, as parsed from
      *   the returned JSON. This format is not meant to be easy to use, but
      *   takes less space.
-     * @param {string[]} queryData.fields The fields every object has.
+     * @param {string[]} queryData.fields
+     *   The fields every object has.
      * @param {Array[]} queryData.objects
      *   An array of arrays, where each array is the values of a single object's
-     *   properties, in the order specified by queryData.fields
-     * @param {string[]} queryData.urls The url of every object, if they have one
-     * @param {string} model The name of the Django model these objects come
-     *                       from.
-     * @param {function} CustomConstructor A constructor to use instead of the
-     *                                     default CuriousObject constructor.
+     *   properties, in the order specified by <code>queryData.fields</code>
+     * @param {string[]} queryData.urls
+     *   The url of every object, if they have one
+     * @param {string} model
+     *   The name of the Django model these objects come from
+     * @param {function} CustomConstructor
+     *   A constructor to use instead of the default CuriousObject constructor.
      *
      * @return {Array<CuriousObject|CustomConstructor>}
-     * An array of objects, which contain the data described in queryData.
+     *   An array of objects, which contain the data described in queryData.
      */
     function _parseObjects(queryData, model, CustomConstructor) {
       var objects = [];
@@ -521,7 +588,7 @@
      * If existing objects are specified, will build relationships using the
      * existing objects.
      *
-     * @public
+     * @memberof module:curious.CuriousObjects
      *
      * @param {string[]} relationships
      *   The names of the relationships objects will have to one another.
@@ -543,15 +610,15 @@
      *   The IDs of the objects returned by the query
      * @param {Object[]} queryJSONResponse.data
      *   An array of objects containing the other fields of the Django objects,
-     *   more than just the IDs. @see _parseObjects for a description of this
+     *   more than just the IDs. See _parseObjects for a description of this
      *   data in the queryData parameter.
      * @param {Array<Object<number,Object>>} existingObjects
      *   The existing objects. Each object in the array is a mapping of an id
      *   to its corresponding object.
      *
      * @return {{objects: Object[], trees: Object[]}
-     *   The parsed objects. Trees holds any hierarchical relationships,
-     *   for recursive queries.
+     *   The parsed objects. <code>trees</code> holds any hierarchical
+     *   relationships, for recursive queries.
      */
     function parse(
       relationships, customConstructors, queryJSONResponse, existingObjects
@@ -659,7 +726,7 @@
      * Utility for pulling out all the values contained in an object, in
      * the same order as its keys would come out.
      *
-     * @public
+     * @memberof module:curious.CuriousObjects
      *
      * @param {Object} obj The object to look at.
      *
@@ -673,9 +740,9 @@
      * Take an array of objects that have 'id' fields, and group them into a
      * single object using that field.
      *
-     * @public
+     * @memberof module:curious.CuriousObjects
      *
-     * @param {Object[]} arrayOfObjects The array to turn into an object.
+     * @param {Object[]} arrayOfObjects The array to turn into an object
      *
      * @return {Array} The values of the object, whatever it holds.
      */
@@ -692,17 +759,19 @@
     }
 
     /**
-     * Take an array of objects that have 'id' fields and pull those fields
-     * out into a list of only one ID each.
+     * <p>Take an array of objects that have <code>id</code> fields and pull
+     * those fields out into a list of only one ID each.</p>
      *
-     * Preserves order.
+     * <p>Preserves order.</p>
      *
-     * @public
+     * @memberof module:curious.CuriousObjects
      *
-     * @param {Object[]} objects An array of objects with the id property.
+     * @param {Object[]} objects
+     *   An array of objects with the <code>id</code> property
      *
-     * @return {number[]} The set of IDs, with duplicates removed, in the same
-     *                    order as the input object list.
+     * @return {number[]}
+     *   The set of IDs, with duplicates removed, in the same order as the
+     *   input object list
      */
     function idList(objects) {
       var uniqueIDs = [];
@@ -724,14 +793,14 @@
     }
 
     /**
-     * Take an array of objects that have 'id' fields and pull those fields
-     * out into a comma-separated string.
+     * <p>Take an array of objects that have <code>id</code> fields and pull
+     * those fields out into a comma-separated string.</p>
      *
-     * Preserves order.
+     * <p>Preserves order.</p>
      *
-     * @public
+     * @memberof module:curious.CuriousObjects
      *
-     * @param {Object[]} arrayOfObjects The array to turn into an object.
+     * @param {Object[]} arrayOfObjects The array to turn into an object
      *
      * @return {string} A comma-separated string containing the objects' IDs,
      *                  with duplicates removed, in the same order as the input
@@ -759,7 +828,7 @@
    * where each array of objects is named by its appropriate relationship name.
    *
    * @param {string[]} relationships The relationship names
-   * @param {Array<Array<Object>>} objects The objects from each relationship.
+   * @param {Array<Array<Object>>} objects The objects from each relationship
    *
    * @return {Object<string,Array>}
    */
@@ -787,12 +856,10 @@
    * Get the final args to send to the Curious server, after filtering down
    * through all of the defaults.
    *
-   * @private
+   * @param {Object} queryArgs Query-specific args
+   * @param {Object} appDefaultArgs Client-specific args
    *
-   * @param {Object} queryArgs Query-specific args.
-   * @param {Object} appDefaultArgs Client-specific args.
-   *
-   * @return {Object} The args, with all defaults filled in hierarchially.
+   * @return {Object} The args, with all defaults filled in hierarchially
    */
   function _getArgs(queryArgs, appDefaultArgs) {
     var args = {x: 0, fk: 0}; // lowest-priority default args
@@ -818,15 +885,14 @@
   }
 
   /**
-   * In an array of array of objects, group each of the arrays by ID.
-   *
-   * @private
+   * Given an array of array of objects, group each of the arrays of objects by
+   * ID
    *
    * @param {Aray<Array<Object>>} arrayOfArraysOfObjects
-   *   An array of arrays to group.
+   *   An array of arrays of objects to group
    *
-   * @return {Array<Object>} Each object corresponds to its array above, but now
-   *                         grouped by ID.
+   * @return {Array<Object>}
+   *   Each object corresponds to its array above, but now grouped by ID
    */
   function _groupArraysOfObjectsByID(arrayOfArraysOfObjects) {
     return arrayOfArraysOfObjects.map(function (arrayOfObjects) {
@@ -842,71 +908,79 @@
    * Tool for making a curious query and returning parsed objects.
    *
    * @class
-   * @public
+   * @alias module:curious.CuriousClient
    *
-   * @param {string} curiousURL The URL of the Curious server
+   * @param {string} curiousURL
+   *  The URL of the Curious server
    * @param {function (string, Object): Promise} request
-   *  A function that makes a POST request and returns a promise (a thenable).
-   *  Examples are jQuery.post, axios.post, and Angular's $http.post. Any
-   *  function that meets the signature, makes a POST request, and returns a
-   *  thenable will work.
-   * @param {Object} appDefaultArgs Default parameters to send to the serever
-   *                                with every query performed by this client.
-   * @param {boolean} quiet Unless true, log every query to the console.
+   *  A function that makes a <code>POST</code> request and returns a promise
+   *  (a thenable). Examples are <code>jQuery.post</code>,
+   *  <code>axios.post</code>, and Angular's <code>$http.post</code>. Any
+   *  function that meets the signature, makes a <code>POST</code> request and
+   *  returns a thenable will work.
+   * @param {Object} appDefaultArgs
+   *  Default parameters to send to the serever with every query performed by
+   *  this client.
+   * @param {boolean} quiet
+   *  Unless true, log every query to the console.
    *
-   * @return {Object} A client object with a single get method.
+   * @return {{get: function}} A client object with a single get method.
    */
   var CuriousClient = function (curiousURL, request, appDefaultArgs, quiet) {
 
-    /**
-     * Perform a Curious query and return back parsed objects.
-     *
-     * @param {string} q The query string.
-     * @param {string[]} relationships The names of relationships between each
-     *                                 joined set of objects.
-     * @param {Array<?function>} constructors An array of constructors for any
-     *                                        custom classes, or null for the
-     *                                        default.
-     * @param {Object} params Query-specific parameters for the request.
-     * @param {Array<Array<Object>>} existingObjects
-     *   Objects that already exist to be linked into the results returned by
-     *   this query.
-     *
-     * @return {Promise} A promise that resolves to an object:
-     *                   {objects: the fully parsed objects,
-     *                    trees: the tree ID structure for recursive queries}
-     */
-    function get(q, relationships, constructors, params, existingObjects) {
-      var args;
+    return {
+      /**
+       * Perform a Curious query and return back parsed objects.
+       *
+       * @memberof module:curious.CuriousClient
+       *
+       * @param {string} q
+       *   The query string.
+       * @param {string[]} relationships
+       *   The names of relationships between each joined set of objects.
+       * @param {Array<?function>} constructors
+       *   An array of constructors for any custom classes, or null for the
+       *   default.
+       * @param {Object} params
+       *   Query-specific parameters for the request.
+       * @param {Array<Array<Object>>} existingObjects
+       *   Objects that already exist to be linked into the results returned by
+       *   this query.
+       *
+       * @return {Promise<{objects: Array, trees: Array}>}
+       *  A promise that resolves to an object containing the parsed objects from
+       *  the query, and a tree structure that relates IDs for recursive queries.
+       */
+      get: function (q, relationships, constructors, params, existingObjects) {
+        var args;
 
-      if (!quiet) {
-        console.warn(q);
-      }
+        if (!quiet) {
+          console.warn(q);
+        }
 
-      if (existingObjects) {
-        existingObjects = _groupArraysOfObjectsByID(existingObjects);
-      }
+        if (existingObjects) {
+          existingObjects = _groupArraysOfObjectsByID(existingObjects);
+        }
 
-      args = _getArgs(params, appDefaultArgs);
-      args.q = q;
+        args = _getArgs(params, appDefaultArgs);
+        args.q = q;
 
-      return request(curiousURL, args)
-        .then(function (response) {
-          var parsedResult = CuriousObjects.parse(
-            relationships, constructors, response.result, existingObjects
-          );
+        return request(curiousURL, args)
+          .then(function (response) {
+            var parsedResult = CuriousObjects.parse(
+              relationships, constructors, response.result, existingObjects
+            );
 
-          return {
-            objects: _convertResultsToOutput(relationships, parsedResult.objects),
-            trees: parsedResult.trees,
-          };
-        });
-    }
-
-    return { get: get };
+            return {
+              objects: _convertResultsToOutput(relationships, parsedResult.objects),
+              trees: parsedResult.trees,
+            };
+          });
+      },
+    };
   };
 
-  // Exports: browser/node
+  // Export either to browser window or CommonJS module
   var ex;
   if (typeof window !== 'undefined' && window) {
     ex = window;
