@@ -920,7 +920,8 @@
    *  returns a thenable will work.
    * @param {Object} appDefaultArgs
    *  Default parameters to send to the serever with every query performed by
-   *  this client.
+   *  this client; see {@link module:curious.CuriousClient.get} for an
+   *  explanation of what each parameter means.
    * @param {boolean} quiet
    *  Unless true, log every query to the console.
    *
@@ -942,7 +943,27 @@
        *   An array of constructors for any custom classes, or null for the
        *   default.
        * @param {Object} params
-       *   Query-specific parameters for the request.
+       *   Query-specific parameters for the request
+       * @param {boolean} [params.x]
+       *   Whether or not to ignore excludes; defaults to false
+       * @param {boolean} [params.c]
+       *   Whether or not to just do a check of the query syntax; defaults to
+       *   false
+       * @param {boolean} [params.d]
+       *   Whether or not return the object data, or just return ids; always
+       *   forced to be true for the JavaScript client
+       * @param {boolean} [params.fk]
+       *   Whether or not follow foreign keys: if false, foregin keys will be
+       *   IDs, as expecte. If true, foreign keys will be 4-member arrays
+       *   that include the ID, name, and URL of the object being pointed to.
+       *   Defaults to false.
+       * @param {boolean} [params.r]
+       *   If true, force a refresh of the data not from cache; defaults to
+       *   false.
+       * @param {boolean} [params.fc]
+       *   If true, force using the cached data; defaults to false.
+       * @param {string} [params.app]
+       *   If provided, the name of the app, to use for cache key construction.
        * @param {Array<Array<Object>>} existingObjects
        *   Objects that already exist to be linked into the results returned by
        *   this query.
