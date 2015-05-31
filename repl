@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var repl = require('repl');
 var curious = require('./curious2.js');
 
