@@ -170,26 +170,24 @@
    *
    * @return {CuriousQuery} The newly constructed object.
    *
-   *
    * @example
-   * // Explicitly set start, wrapWith classes
-   * var q = (new CuriousQuery).
-   *   .start('Experiment(id=302)', 'experiment')
-   *   .follow('Experiment.reaction_set', 'reactions')
-   *   .with('Reaction.dataset_set', 'dataset').wrapWith(Dataset)
-   *   .follow('Dataset.attachment_set');
+   *   // Explicitly set start, wrapWith classes
+   *   var q = (new curious.CuriousQuery())
+   *     .start('Experiment(id=302)', 'experiment')
+   *     .follow('Experiment.reaction_set', 'reactions')
+   *     .follow('Reaction.dataset_set', 'dataset').wrapWith(Dataset)
+   *     .follow('Dataset.attachment_set');
    *
    *  q.query() ==
-   *    'Experiment(id=302) Experiment.reaction_set '
-   *    + 'Reaction.dataset_set, Dataset.attachment_set';
+   *    'Experiment(id=302), Experiment.reaction_set, '
+   *    + 'Reaction.dataset_set, Dataset.attachment_set'
    *
    * @example
-   * // Terser version of the same query above
-   * var q = new CuriousQuery('Experiment(id=302)', 'experiment')
-   *   .follow('Experiment.reaction_set', 'reactions')
-   *   .with('Reaction.dataset_set', 'dataset', Dataset)
-   *   .follow('Dataset.attachment_set');
-   *
+   *   // Terser version of the same query above
+   *   var q = new curious.CuriousQuery('Experiment(id=302)', 'experiment')
+   *     .follow('Experiment.reaction_set', 'reactions')
+   *     .follow('Reaction.dataset_set', 'dataset', Dataset)
+   *     .follow('Dataset.attachment_set');
    */
   var CuriousQuery = function (
     initialTermString, initialRelationship, initialObjectClass
@@ -277,11 +275,13 @@
   CuriousQuery.prototype._append = function (
     termObject, relationship, customConstructor
   ) {
-    this.terms.push(term);
+    this.terms.push(termObject);
     this.relationships.push(relationship);
 
     if (customConstructor) {
       this.objectFactories.push(_makeObjectFactory(customConstructor));
+    } else {
+      this.objectFactories.push(null);
     }
 
     return this;
