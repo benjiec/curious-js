@@ -314,8 +314,8 @@
    *
    * @return {CuriousQuery} The query object, with the term appended
    */
-  CuriousQuery.prototype.follow = function (termString, relationship) {
-    return this._append(new QueryTermFollow(termString), relationship);
+  CuriousQuery.prototype.follow = function (termString, relationship, customConstructor) {
+    return this._append(new QueryTermFollow(termString), relationship, customConstructor);
   };
 
   /** Add a filter term to this query.
