@@ -402,7 +402,7 @@
    *
    * @param {Object} params
    *   An object of parameters to set. See
-   *   {@link module:curious.CuriousClient#get} for a full description of the
+   *   {@link module:curious.CuriousClient#performQuery} for a full description of the
    *   parameters.
    *
    * @return {CuriousQuery}
@@ -429,19 +429,20 @@
 
   /**
    * Perform the query using a passed-in Curious client, such as jQuery's ajax,
-   * or any other client that has asynchronous get/post request methods.
+   * or any other client that has an asynchronous <code>POST</code> request
+   * methods.
    *
    * @param {CuriousClient} curiousClient
    *   A CuriousClient object that will handle performing the actual query.
    *
    * @return {Promise}
-   *   A promise, as returned by {@link module:curious.CuriousClient#get}
+   *   A promise, as returned by {@link module:curious.CuriousClient#performQuery}
    *
    */
   CuriousQuery.prototype.perform = function (curiousClient) {
     var q = this.query();
 
-    return curiousClient.get(
+    return curiousClient.performQuery(
       q, this.relationships, this.objectFactories, this.params, this.existingObjects
     );
   };
@@ -911,21 +912,22 @@
    * @alias module:curious.CuriousClient
    *
    * @param {string} curiousURL
-   *  The URL of the Curious server
+   *   The URL of the Curious server
    * @param {function (string, Object): Promise} request
-   *  A function that makes a <code>POST</code> request and returns a promise
-   *  (a thenable). Examples are <code>jQuery.post</code>,
-   *  <code>axios.post</code>, and Angular's <code>$http.post</code>. Any
-   *  function that meets the signature, makes a <code>POST</code> request and
-   *  returns a thenable will work.
+   *   A function that makes a <code>POST</code> request and returns a promise
+   *   (a thenable). Examples are <code>jQuery.post</code>,
+   *   <code>axios.post</code>, and Angular's <code>$http.post</code>. Any
+   *   function that meets the signature, makes a <code>POST</code> request and
+   *   returns a thenable will work.
    * @param {Object} appDefaultArgs
-   *  Default parameters to send to the serever with every query performed by
-   *  this client; see {@link module:curious.CuriousClient.get} for an
-   *  explanation of what each parameter means.
+   *   Default parameters to send to the serever with every query performed by
+   *   this client; see {@link module:curious.CuriousClient#performQuery} for an
+   *   explanation of what each parameter means.
    * @param {boolean} quiet
-   *  Unless true, log every query to the console.
+   *   Unless true, log every query to the console.
    *
-   * @return {{get: function}} A client object with a single get method.
+   * @return {{performQuery: function}}
+   *   A client object with a single performQuery method.
    */
   var CuriousClient = function (curiousURL, request, appDefaultArgs, quiet) {
 
@@ -972,7 +974,7 @@
        *  A promise that resolves to an object containing the parsed objects from
        *  the query, and a tree structure that relates IDs for recursive queries.
        */
-      get: function (q, relationships, constructors, params, existingObjects) {
+      performQuery: function (q, relationships, constructors, params, existingObjects) {
         var args;
 
         if (!quiet) {
