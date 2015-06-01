@@ -37,6 +37,55 @@ describe('CuriousQuery', function () {
       expect(q.query()).to.equal(expectedQuery);
     });
   });
+
+
+  describe('#start', function () {
+    var startingTerm = 'Experiment(id=302)';
+
+    // Fake constructor
+    function Experiment() { return this; }
+    function ExperimentFactory() { return Object.create(new Experiment()); }
+
+    it('should start the query', function () {
+      var q = (new curious.CuriousQuery()).start(startingTerm, 'experiment');
+      expect(q.query()).to.equal(startingTerm);
+    });
+
+    it('should require both a term and a relationship', function () {
+      expect(function () {
+        (new curious.CuriousQuery()).start();
+      }).to.throw(/term/);
+
+      expect(function () {
+        (new curious.CuriousQuery()).start(startingTerm);
+      }).to.throw(/relationship/);
+    });
+
+    it('should allow shortcuts', function () {
+      var q = new curious.CuriousQuery(startingTerm, 'experiment');
+      expect(q.query()).to.equal(startingTerm);
+    });
+
+    it('should allow custom constructors', function () {
+      var q = new curious.CuriousQuery(startingTerm, 'experiment', Experiment);
+
+      expect(q.query()).to.equal(startingTerm);
+      expect(q.objectFactories).to.have.property('length', 1);
+
+      expect(q.objectFactories[0]()).to.be.an.instanceof(Experiment);
+    });
+
+    it('should allow function factories', function () {
+      var q = new curious.CuriousQuery(startingTerm, 'experiment', ExperimentFactory);
+
+      expect(q.query()).to.equal(startingTerm);
+      expect(q.objectFactories).to.have.property('length', 1);
+
+      expect(q.objectFactories[0]()).to.be.an.instanceof(Experiment);
+    });
+  });
+
+
 });
 
 }());
