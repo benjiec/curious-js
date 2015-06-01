@@ -275,8 +275,16 @@
   CuriousQuery.prototype._append = function (
     termObject, relationship, customConstructor
   ) {
-    this.terms.push(termObject);
-    this.relationships.push(relationship);
+    if (termObject && relationship) {
+      this.terms.push(termObject);
+      this.relationships.push(relationship);
+    } else {
+      throw (
+        'Must specify a term and a relationship to append to: ('
+        + this.query()
+        + ')'
+      );
+    }
 
     if (customConstructor) {
       this.objectFactories.push(_makeObjectFactory(customConstructor));
