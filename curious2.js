@@ -305,7 +305,8 @@
     return this._append(new QueryTermFollow(termString), relationship, customConstructor);
   };
 
-  /** Add an inner-join term to this query.
+  /**
+   * Add an inner-join term to this query.
    *
    * @param {string} termString
    *   The contents of the starting term.
@@ -318,7 +319,8 @@
     return this._append(new QueryTermFollow(termString), relationship, customConstructor);
   };
 
-  /** Add a filter term to this query.
+  /**
+   * Add a filter term to this query.
    *
    * @param {string} termString
    *   The contents of the starting term.
@@ -331,7 +333,8 @@
     return this._append(new QueryTermHaving(termString), relationship);
   };
 
-  /** Add an exclude filter term to this query.
+  /**
+   * Add an exclude filter term to this query.
    *
    * @param {string} termString
    *   The contents of the starting term.
@@ -344,7 +347,8 @@
     return this._append(new QueryTermNotHaving(termString), relationship);
   };
 
-  /** Add an outer-join term to this query.
+  /**
+   * Add an outer-join term to this query.
    *
    * @param {string} termString
    *   The contents of the starting term.
