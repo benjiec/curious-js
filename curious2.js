@@ -469,15 +469,14 @@
    * @param {function} customConstructor
    *   The constructor that will be called with the new keyword to construct
    *   the object.
-   * @param {Object[]} constructorArgs
-   *   An array of additional arguments that will be passed to the constructor.
    *
    * @return {function} A factory function that will return a new object
    *                    whenever called.
    */
-  function _makeObjectFactory(customConstructor, constructorArgs) {
+  function _makeObjectFactory(customConstructor) {
+    var CustomConstructorClass = customConstructor;
     return function () {
-      return new customConstructor.call({}, constructorArgs);
+      return new CustomConstructorClass();
     };
   }
 
@@ -541,13 +540,13 @@
      *   The url of every object, if they have one
      * @param {string} model
      *   The name of the Django model these objects come from
-     * @param {function} CustomConstructor
+     * @param {function} customConstructor
      *   A constructor to use instead of the default CuriousObject constructor.
      *
-     * @return {Array<CuriousObject|CustomConstructor>}
+     * @return {Array<CuriousObject|CustomConstructorClass>}
      *   An array of objects, which contain the data described in queryData.
      */
-    function _parseObjects(queryData, model, CustomConstructor) {
+    function _parseObjects(queryData, model, customConstructor) {
       var objects = [];
 
       if (queryData.objects instanceof Array) {
@@ -556,14 +555,15 @@
           var url = queryData.urls[objectIndex];
           var objectData = {};
           var obj; // the final constructed object
+          var CustomConstructorClass = customConstructor; // Make a properly-capped version
 
           // Combine the data from the fields
           queryData.fields.forEach(function (fieldName, fieldIndex) {
             objectData[fieldName] = objectDataArray[fieldIndex];
           });
 
-          if (CustomConstructor) {
-            obj = new CustomConstructor(objectData);
+          if (customConstructor) {
+            obj = new CustomConstructorClass(objectData);
 
             // We can't be sure that the custom constructor that was passed in
             // got all the fields assigned, so we should do it ourselves just
