@@ -378,6 +378,57 @@ describe('CuriousQuery', function () {
       expect(query.params).to.be.null;
     });
   });
+
+  describe('#clone', function () {
+    var excludedProperties;
+    var originalQuery;
+
+    // Fake constructor
+    function Dataset() {}
+
+    before(function () {
+      excludedProperties = {
+        objectFactories: 'object factory functions do not compare directly',
+      };
+    });
+
+    beforeEach(function () {
+      originalQuery = new curious.CuriousQuery('Experiment(id=302)', 'experiments')
+        .with('Experiment.compounds_of_interest', 'compounds')
+        .follow('Experiment.reaction_set', 'reactions')
+        .having('Reaction.subjects(name="s481466")')
+        .follow('Reaction.dataset_set', 'datasets', Dataset)
+        .follow('Dataset.attachment_set', 'attachments');
+    });
+
+    it('should create the same query string', function () {
+      expect(originalQuery.clone().query()).to.equal(originalQuery.query());
+    });
+
+    it('should clone the properties corretly', function () {
+      Object.keys(originalQuery).forEach(function (property) {
+        if (!excludedProperties.hasOwnProperty(property)) {
+          expect(originalQuery.clone()[property])
+            .to
+            .deep
+            .equal(originalQuery[property], 'Comparing: query.' + property);
+        }
+      });
+    });
+
+    it('should clone the object factories correctly', function () {
+      var clonedObjectFactories = originalQuery.clone().objectFactories;
+
+      originalQuery.objectFactories.forEach(function (factory, factoryIndex) {
+        if (factory) {
+          expect(Object.getPrototypeOf(clonedObjectFactories[factoryIndex]()))
+            .to
+            .deep
+            .equal(Object.getPrototypeOf(factory()));
+        }
+      });
+    });
+  });
 });
 
 }());
