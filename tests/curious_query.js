@@ -496,6 +496,29 @@ describe('CuriousQuery', function () {
       });
     });
   });
+
+  describe('#perform', function () {
+    var curiousClient;
+
+    before(function () {
+
+      // Make a mock CuriousClient class
+      function MockCuriousClient() { }
+
+      MockCuriousClient.prototype.performQuery = function () {
+        return 'some arbitrary value';
+      };
+
+      curiousClient = new MockCuriousClient();
+    });
+
+    it('should return whatever CuriousClient#performQuery does', function () {
+      var q = new curious.CuriousQuery();
+      expect(q.perform(curiousClient)).to.equal(curiousClient.performQuery());
+    });
+  });
+
+
 });
 
 }());
