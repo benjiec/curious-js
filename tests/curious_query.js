@@ -45,10 +45,11 @@ describe('CuriousQuery', function () {
 
     // Fake constructor
     function Experiment() { return this; }
-    function ExperimentFactory() { return Object.create(new Experiment()); }
+    function experimentFactory() { return Object.create(new Experiment()); }
 
     it('should start the query', function () {
-      var q = (new curious.CuriousQuery()).start(startingTerm, 'experiment');
+      var q = (new curious.CuriousQuery()).start(startingTerm, 'experiments');
+
       expect(q.query()).to.equal(startingTerm);
     });
 
@@ -62,27 +63,39 @@ describe('CuriousQuery', function () {
       }).to.throw(/relationship/);
     });
 
-    it('should allow shortcuts', function () {
-      var q = new curious.CuriousQuery(startingTerm, 'experiment');
-      expect(q.query()).to.equal(startingTerm);
-    });
-
     it('should allow custom constructors', function () {
-      var q = new curious.CuriousQuery(startingTerm, 'experiment', Experiment);
+      var q = (new curious.CuriousQuery())
+        .start(startingTerm, 'experiments')
+        .wrapWith(Experiment);
 
       expect(q.query()).to.equal(startingTerm);
-      expect(q.objectFactories).to.have.property('length', 1);
 
+      expect(q.objectFactories).to.have.length(1);
       expect(q.objectFactories[0]()).to.be.an.instanceof(Experiment);
     });
 
     it('should allow function factories', function () {
-      var q = new curious.CuriousQuery(startingTerm, 'experiment', ExperimentFactory);
+      var q = (new curious.CuriousQuery())
+        .start(startingTerm, 'experiments')
+        .wrapDynamically(experimentFactory);
 
       expect(q.query()).to.equal(startingTerm);
-      expect(q.objectFactories).to.have.property('length', 1);
 
+      expect(q.objectFactories).to.have.length(1);
       expect(q.objectFactories[0]()).to.be.an.instanceof(Experiment);
+    });
+
+    it('should allow shortcuts', function () {
+      var q = new curious.CuriousQuery(startingTerm, 'experiments', Experiment);
+      var q2 = new curious.CuriousQuery(startingTerm, 'experiments', experimentFactory);
+
+      expect(q.query()).to.equal(startingTerm);
+
+      expect(q.objectFactories).to.have.length(1);
+      expect(q.objectFactories[0]()).to.be.an.instanceof(Experiment);
+
+      expect(q2.objectFactories).to.have.length(1);
+      expect(q2.objectFactories[0]()).to.be.an.instanceof(Experiment);
     });
   });
 
