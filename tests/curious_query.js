@@ -429,6 +429,73 @@ describe('CuriousQuery', function () {
       });
     });
   });
+
+  describe('#extend', function () {
+    var excludedProperties;
+    var combinedQueryString = (
+      'Experiment(id=302) ?(Experiment.compounds_of_interest)'
+      + ' Experiment.reaction_set +(Reaction.subjects(name="s481466"))'
+      + ' Reaction.dataset_set, Dataset.attachment_set'
+    );
+    var query1;
+    var query2;
+
+    // Fake constructor
+    function Dataset() {}
+
+    before(function () {
+      excludedProperties = {
+        objectFactories: 'functions do not compare well',
+      };
+    });
+
+    beforeEach(function () {
+      query1 = new curious.CuriousQuery('Experiment(id=302)', 'experiments')
+        .with('Experiment.compounds_of_interest', 'compounds')
+        .follow('Experiment.reaction_set', 'reactions')
+        .having('Reaction.subjects(name="s481466")');
+
+      query2 = new curious.CuriousQuery('Reaction.dataset_set', 'datasets', Dataset)
+        .follow('Dataset.attachment_set', 'attachments');
+    });
+
+    it('should create the correct query string', function () {
+      expect(query1.extend(query2).query()).to.equal(combinedQueryString);
+    });
+
+    it('should extend properties corretly', function () {
+      var extendedQuery = query1.clone().extend(query2);
+
+      Object.keys(query1).forEach(function (property) {
+        if (
+          !excludedProperties.hasOwnProperty(property)
+          && (extendedQuery[property] instanceof Array)
+        ) {
+          expect(extendedQuery[property])
+            .to
+            .deep
+            .equal(
+              query1[property].concat(query2[property]),
+              'Examining: extendedQuery.' + property
+            );
+        }
+      });
+    });
+
+    it('should extend the object factories correctly', function () {
+      var extendedQuery = query1.clone().extend(query2);
+      var extendedObjectFactories = query1.objectFactories.concat(query2.objectFactories);
+
+      extendedQuery.objectFactories.forEach(function (factory, factoryIndex) {
+        if (factory) {
+          expect(Object.getPrototypeOf(extendedObjectFactories[factoryIndex]()))
+            .to
+            .deep
+            .equal(Object.getPrototypeOf(factory()));
+        }
+      });
+    });
+  });
 });
 
 }());
