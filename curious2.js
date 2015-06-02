@@ -421,7 +421,11 @@
    *   The query object with its curious client parameters updated.
    */
   CuriousQuery.prototype.setParams = function (params) {
-    this.params = params;
+    if (params instanceof Object) {
+      Object.keys(params).forEach(function (key) {
+        this.params[key] = params[key];
+      });
+    }
     return this;
   };
 
