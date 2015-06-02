@@ -66,7 +66,7 @@
   QueryTermFollow.prototype = new QueryTerm();
 
   /**
-   * Does not implicitly join.
+   * Does not implicitly join. Requires a comma.
    * @override
    */
   QueryTermFollow.prototype.implicitJoin = function () { return false; };
@@ -212,16 +212,23 @@
    */
   CuriousQuery.prototype.query = function () {
     var query = '';
-    var termIndex;
+    var terms = [];
 
-    for (termIndex = 0; termIndex < this.terms.length; termIndex++) {
-      // The first term just gets added directly: it's the starting table.
-      // The following terms either do or do not have an implicit inner join
-      // between them
+    // Flatten all terms and arrays of terms into a single array.
+    this.terms.forEach(function (term) {
+      terms = terms.concat(term);
+    });
+
+    terms.forEach(function (term, termIndex) {
+      // The first term just gets added directly: it's the starting model or
+      // object. The following terms either do or do not have an implicit inner
+      // join between them. If they do not have an implicit inner join,
+      // commas are inserted to ensure that the objects that correspond to
+      // those terms are returned
       if (termIndex > 0) {
         if (
-          !this.terms[termIndex - 1].implicitJoin()
-          && !this.terms[termIndex].implicitJoin()
+          !terms[termIndex - 1].implicitJoin()
+          && !term.implicitJoin()
         ) {
           query += ', ';
         } else {
@@ -229,8 +236,8 @@
         }
       }
 
-      query += this.terms[termIndex].toString();
-    }
+      query += term;
+    });
 
     return query;
   };
@@ -240,41 +247,48 @@
    * chain with the current query chain's terms followed
    * by the other query chain's terms.
    *
-   * @param {CuriousQuery} query The other query
+   * @param {CuriousQuery} extensionQueryObject The query object being added
    * @return {CuriousQuery} The combined query
    */
-  CuriousQuery.prototype.extend = function (query) {
-    for (var termIndex = 0; termIndex < query.terms.length; termIndex++) {
-      this._append(
-        query.terms[termIndex],
-        query.relationships[termIndex],
-        query.objectFactories[termIndex]
-      );
-    }
+  CuriousQuery.prototype.extend = function (extensionQueryObject) {
+    var queryObject = this;
 
-    return this;
+    extensionQueryObject.terms.forEach(function (term, termIndex) {
+      queryObject._addTerm(
+        term,
+        extensionQueryObject.relationships[termIndex],
+        extensionQueryObject.objectFactories[termIndex]
+      );
+    });
+
+    return queryObject;
   };
 
   /**
-   * <p>Append another term to this query: generic method.</p>
+   * <p>Add another term to this query: generic method.</p>
    *
    * <p>Consumers should not use this method, as they do not have access to the
    * {@link module:curious~QueryTerm} classes.</p>
    *
    * @private
-   * @param {QueryTerm} termObject
-   *   A {@link module:curious~QueryTerm} object to append to the term
+   *
+   * @param {QueryTerm|Array<QuerryTerm>} termObject
+   *   A {@link module:curious~QueryTerm} object to append to the term, or an
+   *   array of them
    * @param {string} relationship
    *   The name of this term in inter-term relationships
    * @param {function} [customConstructor]
    *   A custom constructor for the resulting objects, if this part of the
    *   query returns new objects
    *
-   * @return {CuriousQuery} The query object, with the term appended
+   * @return {CuriousQuery} The query object, with the new term added
    */
-  CuriousQuery.prototype._append = function (
+  CuriousQuery.prototype._addTerm = function (
     termObject, relationship, customConstructor
   ) {
+    // Ensure that objectFactories, relationships, and terms always have the
+    // same number of elements.
+
     if (termObject && relationship) {
       this.terms.push(termObject);
       this.relationships.push(relationship);
@@ -296,6 +310,46 @@
   };
 
   /**
+   * <p>Append more text to the end of the last term: generic method.</p>
+   *
+   * <p>Consumers should not use this method, as they do not have access to the
+   * {@link module:curious~QueryTerm} classes.</p>
+   *
+   * @private
+   *
+   * @param {QueryTerm|Array<QueryTerm>} termObject
+   *   A {@link module:curious~QueryTerm} object (or an array of them), to
+   *   append to the previous term.
+   *
+   * @return {CuriousQuery}
+   *   The query object, with the term object's string representation appended
+   *   to the previous term
+   */
+  CuriousQuery.prototype._appendToPreviousTerm = function (termObject) {
+    var lastTerm;
+
+    if (this.terms.length) {
+      lastTerm = this.terms[this.terms.length - 1];
+
+      // If the last term has not already been turned into an array, prep it
+      // first
+      if (!(lastTerm instanceof Array)) {
+        lastTerm = [lastTerm];
+      }
+
+      lastTerm = lastTerm.concat(termObject);
+
+      // modify the actual terms of the object, since lastTerm is just a shallow
+      // reference copy
+      this.terms[this.terms.length - 1] = lastTerm;
+    } else {
+      throw('Must add terms before appending "' + termObject + '" to them.');
+    }
+
+    return this;
+  };
+
+  /**
    * Add a starting term to this query. Equivalent to passing parameters
    * directly to the constructor.
    *
@@ -310,7 +364,7 @@
    * @return {CuriousQuery} The query object, with the term appended
    */
   CuriousQuery.prototype.start = function (termString, relationship, customConstructor) {
-    return this._append(new QueryTermFollow(termString), relationship, customConstructor);
+    return this._addTerm(new QueryTermFollow(termString), relationship, customConstructor);
   };
 
   /**
@@ -324,35 +378,31 @@
    * @return {CuriousQuery} The query object, with the term appended
    */
   CuriousQuery.prototype.follow = function (termString, relationship, customConstructor) {
-    return this._append(new QueryTermFollow(termString), relationship, customConstructor);
+    return this._addTerm(new QueryTermFollow(termString), relationship, customConstructor);
   };
 
   /**
    * Add a filter term to this query.
    *
    * @param {string} termString
-   *   The contents of the starting term.
-   * @param {string} relationship
-   *   The name of this term in inter-term relationships
+   *   The subquery to filter by.
    *
    * @return {CuriousQuery} The query object, with the term appended
    */
-  CuriousQuery.prototype.having = function (termString, relationship) {
-    return this._append(new QueryTermHaving(termString), relationship);
+  CuriousQuery.prototype.having = function (termString) {
+    return this._appendToPreviousTerm(new QueryTermHaving(termString));
   };
 
   /**
    * Add an exclude filter term to this query.
    *
    * @param {string} termString
-   *   The contents of the starting term.
-   * @param {string} relationship
-   *   The name of this term in inter-term relationships
+   *   The subquery to filter by.
    *
    * @return {CuriousQuery} The query object, with the term appended
    */
-  CuriousQuery.prototype.notHaving = function (termString, relationship) {
-    return this._append(new QueryTermNotHaving(termString), relationship);
+  CuriousQuery.prototype.notHaving = function (termString) {
+    return this._appendToPreviousTerm(new QueryTermNotHaving(termString));
   };
 
   /**
@@ -369,7 +419,7 @@
    * @return {CuriousQuery} The query object, with the term appended
    */
   CuriousQuery.prototype.with = function (termString, relationship, customConstructor) {
-    return this._append(new QueryTermWith(termString), relationship, customConstructor);
+    return this._addTerm(new QueryTermWith(termString), relationship, customConstructor);
   };
 
   /**
