@@ -402,7 +402,7 @@
     if (this.objectFactories.length) {
       this.objectFactories[this.objectFactories.length - 1] = factoryFunction;
     } else {
-      throw('Cannot specify type of object before starting a query');
+      throw('Cannot specify custom object constructor before starting a query');
     }
 
     return this;
