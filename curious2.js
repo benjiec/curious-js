@@ -491,12 +491,18 @@
    *   The query object with its curious client parameters updated.
    */
   CuriousQuery.prototype.setParams = function (params) {
+    var queryObject = this;
+
     if (params instanceof Object) {
+      if (!queryObject.params) {
+        queryObject.params = {};
+      }
+
       Object.keys(params).forEach(function (key) {
-        this.params[key] = params[key];
+        queryObject.params[key] = params[key];
       });
     }
-    return this;
+    return queryObject;
   };
 
   /**
@@ -509,15 +515,17 @@
    *                        updated.
    */
   CuriousQuery.prototype.setExistingObjects = function (objs) {
+    var queryObject = this;
+
     if (objs && objs.forEach) {
-      this.existingObjects = [];
+      queryObject.existingObjects = [];
 
       objs.forEach(function (existingObject, ix) {
-        this.existingObjects[ix] = existingObject;
+        queryObject.existingObjects[ix] = existingObject;
       });
     }
 
-    return this;
+    return queryObject;
   };
 
   /**
