@@ -439,7 +439,14 @@
    *                        updated.
    */
   CuriousQuery.prototype.setExistingObjects = function (objs) {
-    this.existingObjects = objs;
+    if (objs && objs.forEach) {
+      this.existingObjects = [];
+
+      objs.forEach(function (existingObject, ix) {
+        this.existingObjects[ix] = existingObject;
+      });
+    }
+
     return this;
   };
 
