@@ -265,6 +265,26 @@
   };
 
   /**
+   * Return a deep copy of the current query object.
+   *
+   * @return {CuriousQuery}
+   *   A new CuriousQuery object constaining the same terms, relationships,
+   *   constructors
+   */
+  CuriousQuery.prototype.clone = function () {
+    var clonedObject;
+
+    clonedObject = new CuriousQuery();
+    clonedObject.extend(this);
+
+    // One-level-deep copies of params and existing objects
+    clonedObject.setParams(this.params);
+    clonedObject.setExistingObjects(this.existingObjects);
+
+    return clonedObject;
+  };
+
+  /**
    * <p>Add another term to this query: generic method.</p>
    *
    * <p>Consumers should not use this method, as they do not have access to the
