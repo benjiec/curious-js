@@ -25,6 +25,7 @@ describe('CuriousQuery', function () {
         .follow('Experiment.reaction_set', 'reactions')
         .follow('Reaction.dataset_set', 'datasets').wrapWith(Dataset)
         .follow('Dataset.attachment_set', 'attachments');
+
       expect(q.query()).to.equal(expectedQuery);
     });
 
@@ -34,10 +35,10 @@ describe('CuriousQuery', function () {
         .follow('Experiment.reaction_set', 'reactions')
         .follow('Reaction.dataset_set', 'dataset', Dataset)
         .follow('Dataset.attachment_set', 'attachments');
+
       expect(q.query()).to.equal(expectedQuery);
     });
   });
-
 
   describe('#start', function () {
     var startingTerm = 'Experiment(id=302)';
