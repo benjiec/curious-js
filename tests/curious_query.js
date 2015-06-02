@@ -315,6 +315,37 @@ describe('CuriousQuery', function () {
     });
   });
 
+  describe('#setExistingObjects', function () {
+    var query;
+    var someObjects = [{a: 'b'}, {c: 'd', e: 'f'}, {g: 23}];
+
+    beforeEach(function () {
+      query = new curious.CuriousQuery();
+    });
+
+    it('should set the existingObjects property', function () {
+      query.setExistingObjects(someObjects);
+      expect(query.existingObjects).to.deep.equal(someObjects);
+    });
+
+    it('should make a one-level shallow copy', function () {
+      query.setExistingObjects(someObjects);
+
+      // one-level-deep assignments do not transfer
+      someObjects[0] = 'moop';
+      expect(query.existingObjects[0]).to.deep.equal({a: 'b'});
+
+      // nested assigments do transfer, however
+      someObjects[1].c = 'moop';
+      expect(query.existingObjects).to.have.deep.property('[1].c', 'moop');
+    });
+
+    it('should do nothing if passed in nothing', function () {
+      expect(query.existingObjects).to.be.null;
+      query.setExistingObjects();
+      expect(query.existingObjects).to.be.null;
+    });
+  });
 });
 
 }());
