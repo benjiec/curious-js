@@ -284,6 +284,37 @@ describe('CuriousQuery', function () {
       expect(q2.objectFactories[2]()).to.be.an.instanceof(Reaction);
     });
   });
+
+  // having/notHaving should work basically the same way
+  [
+    {word: 'having', symbol: '+'},
+    {word: 'notHaving', symbol: '-'},
+  ].forEach(function (having) {
+
+    describe('#' + having.word, function () {
+      var havingClause = 'Experiment.compounds_of_interest(id=123)';
+      var expectedQuery = 'Experiment ' + having.symbol + '(' + havingClause + ')';
+      var startingQuery;
+
+      beforeEach(function () {
+        startingQuery = new curious.CuriousQuery(
+          'Experiment', 'experiments'
+        );
+      });
+
+      it('should append to the query with a "' + having.symbol + '"', function () {
+        var q = startingQuery[having.word](havingClause);
+        expect(q.query()).to.equal(expectedQuery);
+      });
+
+      it('should correctly insert into a query', function () {
+        var q = startingQuery[having.word](havingClause)
+          .follow('Experiment.reaction_set', 'reactions');
+        expect(q.query()).to.equal(expectedQuery + ' Experiment.reaction_set');
+      });
+    });
+  });
+
 });
 
 }());
