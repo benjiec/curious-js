@@ -183,6 +183,107 @@ describe('CuriousQuery', function () {
     });
 
   });
+
+  describe('#with', function () {
+    var expectedQuery = (
+      'Experiment(id=302)'
+      + ' ?(Experiment.compounds_of_interest)'
+      + ' Experiment.reaction_set'
+    );
+    var startingQuery;
+
+    // Fake constructor
+    function Experiment() { return this; }
+    function Reaction() { return this; }
+    function Compound() { return this; }
+    function compoundFactory() { return Object.create(new Compound()); }
+
+    beforeEach(function () {
+      startingQuery = new curious.CuriousQuery(
+        'Experiment(id=302)', 'experiments', Experiment
+      );
+    });
+
+    it('should append to the query with a groupng', function () {
+      var q = startingQuery
+        .with('Experiment.compounds_of_interest', 'compounds')
+        .follow('Experiment.reaction_set', 'reactions');
+
+      expect(q.query()).to.equal(expectedQuery);
+    });
+
+    it('should successfully allow terms without commas inside the group', function () {
+      var q = startingQuery
+        .with('Experiment.compounds_of_interest Compound.standard_set', 'standards')
+        .follow('Experiment.reaction_set', 'reactions');
+
+      expect(q.query()).to.equal(
+        'Experiment(id=302)'
+        + ' ?(Experiment.compounds_of_interest Compound.standard_set)'
+        + ' Experiment.reaction_set'
+      );
+    });
+
+    it('should require both a term and a relationship', function () {
+      expect(function () {
+        startingQuery.with();
+      }).to.throw(/term/);
+
+      expect(function () {
+        startingQuery.with('Experiment.reaction_set');
+      }).to.throw(/relationship/);
+    });
+
+    it('should allow custom constructors', function () {
+      var q = startingQuery
+        .with('Experiment.compounds_of_interest', 'compounds').wrapWith(Compound)
+        .follow('Experiment.reaction_set', 'reactions').wrapWith(Reaction);
+
+      expect(q.query()).to.equal(expectedQuery);
+
+      expect(q.objectFactories).to.have.length(3);
+      expect(q.objectFactories[0]()).to.be.an.instanceof(Experiment);
+      expect(q.objectFactories[1]()).to.be.an.instanceof(Compound);
+      expect(q.objectFactories[2]()).to.be.an.instanceof(Reaction);
+    });
+
+    it('should allow function factories', function () {
+      var q = startingQuery
+        .with('Experiment.compounds_of_interest', 'compounds')
+          .wrapDynamically(compoundFactory)
+        .follow('Experiment.reaction_set', 'reactions').wrapWith(Reaction);
+
+      expect(q.query()).to.equal(expectedQuery);
+
+      expect(q.objectFactories).to.have.length(3);
+      expect(q.objectFactories[0]()).to.be.an.instanceof(Experiment);
+      expect(q.objectFactories[1]()).to.be.an.instanceof(Compound);
+      expect(q.objectFactories[2]()).to.be.an.instanceof(Reaction);
+    });
+
+    it('should allow shortcuts', function () {
+      var q = startingQuery.clone()
+        .with('Experiment.compounds_of_interest', 'compounds', Compound)
+        .follow('Experiment.reaction_set', 'reactions').wrapWith(Reaction);
+      var q2 = startingQuery.clone()
+        .with('Experiment.compounds_of_interest', 'compounds', compoundFactory)
+        .follow('Experiment.reaction_set', 'reactions').wrapWith(Reaction);
+
+      expect(q.query()).to.equal(expectedQuery);
+
+      expect(q.objectFactories).to.have.length(3);
+      expect(q.objectFactories[0]()).to.be.an.instanceof(Experiment);
+      expect(q.objectFactories[1]()).to.be.an.instanceof(Compound);
+      expect(q.objectFactories[2]()).to.be.an.instanceof(Reaction);
+
+      expect(q2.query()).to.equal(expectedQuery);
+
+      expect(q2.objectFactories).to.have.length(3);
+      expect(q2.objectFactories[0]()).to.be.an.instanceof(Experiment);
+      expect(q2.objectFactories[1]()).to.be.an.instanceof(Compound);
+      expect(q2.objectFactories[2]()).to.be.an.instanceof(Reaction);
+    });
+  });
 });
 
 }());
