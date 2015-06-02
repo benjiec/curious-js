@@ -100,6 +100,89 @@ describe('CuriousQuery', function () {
   });
 
 
+  describe('#follow', function () {
+    var expectedQuery = 'Experiment(id=302), Experiment.reaction_set';
+    var startingQuery;
+
+
+    // Fake constructor
+    function Experiment() { return this; }
+    function Reaction() { return this; }
+    function reactionFactory() { return Object.create(new Reaction()); }
+
+    beforeEach(function () {
+      startingQuery = new curious.CuriousQuery(
+        'Experiment(id=302)', 'experiments', Experiment
+      );
+    });
+
+    it('should append to the query with a comma', function () {
+      var q = startingQuery
+        .follow('Experiment.reaction_set', 'reactions');
+      expect(q.query()).to.equal(expectedQuery);
+    });
+
+    it('should successfully allow terms without commas', function () {
+      var q = startingQuery
+        .follow('Experiment.reaction_set Reaction.dataset_set', 'datasets');
+
+      expect(q.query()).to.equal(expectedQuery + ' Reaction.dataset_set');
+    });
+
+    it('should require both a term and a relationship', function () {
+      expect(function () {
+        startingQuery.follow();
+      }).to.throw(/term/);
+
+      expect(function () {
+        startingQuery.follow('Experiment.reaction_set');
+      }).to.throw(/relationship/);
+    });
+
+    it('should allow custom constructors', function () {
+      var q = startingQuery
+        .follow('Experiment.reaction_set', 'reactions')
+        .wrapWith(Reaction);
+
+      expect(q.query()).to.equal(expectedQuery);
+
+      expect(q.objectFactories).to.have.length(2);
+      expect(q.objectFactories[0]()).to.be.an.instanceof(Experiment);
+      expect(q.objectFactories[1]()).to.be.an.instanceof(Reaction);
+    });
+
+    it('should allow function factories', function () {
+      var q = startingQuery
+        .follow('Experiment.reaction_set', 'reactions')
+        .wrapDynamically(reactionFactory);
+
+      expect(q.query()).to.equal(expectedQuery);
+
+      expect(q.objectFactories).to.have.length(2);
+      expect(q.objectFactories[0]()).to.be.an.instanceof(Experiment);
+      expect(q.objectFactories[1]()).to.be.an.instanceof(Reaction);
+    });
+
+    it('should allow shortcuts', function () {
+      var q = startingQuery.clone()
+        .follow('Experiment.reaction_set', 'reactions', Reaction);
+      var q2 = startingQuery.clone()
+        .follow('Experiment.reaction_set', 'reactions', reactionFactory);
+
+      expect(q.query()).to.equal(expectedQuery);
+
+      expect(q.objectFactories).to.have.length(2);
+      expect(q.objectFactories[0]()).to.be.an.instanceof(Experiment);
+      expect(q.objectFactories[1]()).to.be.an.instanceof(Reaction);
+
+      expect(q2.query()).to.equal(expectedQuery);
+
+      expect(q2.objectFactories).to.have.length(2);
+      expect(q2.objectFactories[0]()).to.be.an.instanceof(Experiment);
+      expect(q2.objectFactories[1]()).to.be.an.instanceof(Reaction);
+    });
+
+  });
 });
 
 }());
