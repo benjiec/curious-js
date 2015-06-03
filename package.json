@@ -1,11 +1,11 @@
 {
   "name": "curious-js",
   "repository": "https://github.com/benjiec/curious-js",
-  "authors": [
-    {
-      "name": "Benjie Chen",
-      "email": "benjie@ginkgobioworks.com"
-    },
+  "author": {
+    "name": "Benjie Chen",
+    "email": "benjie@ginkgobioworks.com"
+  },
+  "contributors": [
     {
       "name": "Misha Wolfson",
       "email": "misha@ginkgobioworks.com",
@@ -18,6 +18,9 @@
   "main": [
     "./curious.js"
   ],
+  "scripts": {
+    "test": "mocha --recursive tests"
+  },
   "dependencies": {
   },
   "devDependencies": {
