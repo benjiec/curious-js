@@ -1018,11 +1018,13 @@
    * @param {string} curiousURL
    *   The URL of the Curious server
    * @param {function (string, Object): Promise} request
-   *   A function that makes a <code>POST</code> request and returns a promise
+   *   <p>A function that makes a <code>POST</code> request and returns a promise
    *   (a thenable). Examples are <code>jQuery.post</code>,
-   *   <code>axios.post</code>, and Angular's <code>$http.post</code>. Any
-   *   function that meets the signature, makes a <code>POST</code> request and
-   *   returns a thenable will work.
+   *   <code>axios.post</code>, and Angular's <code>$http.post</code>.</p>
+   *
+   *   <p>Any function that meets the signature, makes a <code>POST</code> request and
+   *   returns a thenable that resolves to the parsed JSON of the curious
+   *   server's response will work.</p>
    * @param {Object} clientDefaultArgs
    *   Default parameters to send to the serever with every query performed by
    *   this client; see {@link module:curious.CuriousClient#performQuery} for an
