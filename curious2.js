@@ -808,10 +808,12 @@
                 obj = joinDestinationObjects[id];
                 srcObj = joinSourceObjects[srcID];
 
-                // Forward relationship from query to next query
-                srcObj[forwardRelationshipName].push(obj);
-                // Reverse relationship to previous query
-                obj[reverseRelationshipName].push(srcObj);
+                if (obj && srcObj) {
+                  // Forward relationship from query to next query
+                  srcObj[forwardRelationshipName].push(obj);
+                  // Reverse relationship to previous query
+                  obj[reverseRelationshipName].push(srcObj);
+                }
               }
             });
           }
