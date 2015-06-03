@@ -60,6 +60,6 @@ describe('CuriousClient', function () {
         throw error;
       });
     });
+  });
 });
-
 }());
