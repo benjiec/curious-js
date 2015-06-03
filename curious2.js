@@ -1072,8 +1072,9 @@
        *   this query.
        *
        * @return {Promise<{objects: Array, trees: Array}>}
-       *  A promise that resolves to an object containing the parsed objects from
-       *  the query, and a tree structure that relates IDs for recursive queries.
+       *   A promise that resolves to an object containing the parsed objects
+       *   from the query, and a tree structure that relates IDs for recursive
+       *   queries.
        */
       performQuery: function (q, relationships, constructors, params, existingObjects) {
         var args;
