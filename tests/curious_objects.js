@@ -279,7 +279,6 @@ describe('CuriousObjects', function () {
             sample_id: 124816,
             __url: 'http://example.com/experiment/403/',
             __model: 'Reaction',
-            __dirty: false,
           }
         },
       ];

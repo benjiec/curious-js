@@ -156,7 +156,6 @@ exports.expectedObjects = function () {
     temperature: null,
     __url: 'http://example.com/experiment/403/',
     __model: 'Experiment',
-    __dirty: false,
   };
 
   rxns = [
@@ -173,7 +172,6 @@ exports.expectedObjects = function () {
       sample_id: null,
       __url: 'http://example.com/experiment/403/',
       __model: 'Reaction',
-      __dirty: false,
     }, {
       id: 23064,
       created_by_id: null,
@@ -187,7 +185,6 @@ exports.expectedObjects = function () {
       sample_id: null,
       __url: 'http://example.com/experiment/403/',
       __model: 'Reaction',
-      __dirty: false,
     }, {
       id: 23057,
       created_by_id: null,
@@ -201,7 +198,6 @@ exports.expectedObjects = function () {
       sample_id: 454565,
       __url: 'http://example.com/experiment/403/',
       __model: 'Reaction',
-      __dirty: false,
     },
   ];
 

@@ -597,7 +597,6 @@
       // Special properties that aren't data-bearing, but are often convenient
       newObject.__url = null;
       newObject.__model = null;
-      newObject.__dirty = false;
 
       // Copy over the object data to be properties of the new CuriousObject
       Object.keys(objectData).forEach(function (key) {
@@ -662,10 +661,6 @@
                 obj[fieldName] = objectData[fieldName];
               }
             });
-
-            if (!obj.hasOwnProperty('__dirty')) {
-              obj.__dirty = false;
-            }
 
           } else {
             // The CuriousObject constructor does this automatically
@@ -808,7 +803,7 @@
                 obj = joinDestinationObjects[id];
                 srcObj = joinSourceObjects[srcID];
 
-                if (obj && srcObj) {
+                if (srcObj && obj) {
                   // Forward relationship from query to next query
                   srcObj[forwardRelationshipName].push(obj);
                   // Reverse relationship to previous query
