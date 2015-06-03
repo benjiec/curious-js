@@ -959,18 +959,18 @@
    * through all of the defaults.
    *
    * @param {Object} queryArgs Query-specific args
-   * @param {Object} appDefaultArgs Client-specific args
+   * @param {Object} clientDefaultArgs Client-specific args
    *
    * @return {Object} The args, with all defaults filled in hierarchially
    */
-  function _getArgs(queryArgs, appDefaultArgs) {
+  function _getArgs(queryArgs, clientDefaultArgs) {
     var args = {x: 0, fk: 0}; // lowest-priority default args
     var immutableArgs = {d: 1}; // these are always set, no matter what
 
     // Override lowest-priority default args with client-level defaults
-    if (appDefaultArgs) {
-      Object.keys(appDefaultArgs).forEach(function (key) {
-        args[key] = appDefaultArgs[key];
+    if (clientDefaultArgs) {
+      Object.keys(clientDefaultArgs).forEach(function (key) {
+        args[key] = clientDefaultArgs[key];
       });
     }
 
@@ -1023,7 +1023,7 @@
    *   <code>axios.post</code>, and Angular's <code>$http.post</code>. Any
    *   function that meets the signature, makes a <code>POST</code> request and
    *   returns a thenable will work.
-   * @param {Object} appDefaultArgs
+   * @param {Object} clientDefaultArgs
    *   Default parameters to send to the serever with every query performed by
    *   this client; see {@link module:curious.CuriousClient#performQuery} for an
    *   explanation of what each parameter means.
@@ -1033,7 +1033,7 @@
    * @return {{performQuery: function}}
    *   A client object with a single performQuery method.
    */
-  var CuriousClient = function (curiousURL, request, appDefaultArgs, quiet) {
+  var CuriousClient = function (curiousURL, request, clientDefaultArgs, quiet) {
 
     return {
       /**
@@ -1090,7 +1090,7 @@
           existingObjects = _groupArraysOfObjectsByID(existingObjects);
         }
 
-        args = _getArgs(params, appDefaultArgs);
+        args = _getArgs(params, clientDefaultArgs);
         args.q = q;
 
         return request(curiousURL, args)
