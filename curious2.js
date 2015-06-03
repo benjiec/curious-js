@@ -967,20 +967,23 @@
     var args = {x: 0, fk: 0}; // lowest-priority default args
     var immutableArgs = {d: 1}; // these are always set, no matter what
 
+    // Override lowest-priority default args with client-level defaults
     if (appDefaultArgs) {
       Object.keys(appDefaultArgs).forEach(function (key) {
-        args[key] = appDefaultArgs[kkey];
+        args[key] = appDefaultArgs[key];
       });
     }
 
+    // Override app-level defaults with query-level args
     if (queryArgs) {
       Object.keys(queryArgs).forEach(function (key) {
-        args[key] = queryArgs[kkey];
+        args[key] = queryArgs[key];
       });
     }
 
+    // Make sure that the immutable args are always set to their required values
     Object.keys(immutableArgs).forEach(function (key) {
-      args[k] = immutableArgs[k];
+      args[key] = immutableArgs[key];
     });
 
     return args;
