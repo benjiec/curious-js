@@ -109,7 +109,13 @@ function CuriousXhr() {
       callback: function(response, xhr) {
         if (xhr.status >= 200 && xhr.status < 300) {
           if (success_cb) {
-            var r = JSON.parse(xhr.responseText);
+            var r = null;
+            try {
+              r = JSON.parse(xhr.responseText);
+            }
+            catch(e) {
+              r = xhr.responseText;
+            }
             success_cb(r);
           }
         }
