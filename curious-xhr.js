@@ -43,7 +43,6 @@ XHR.prototype = {
     }
     this.makeReadyStateHandler(xhr, options.callback);
     this.setRequestHeaders(xhr, options.headers);
-    this.setRequestHeaders(xhr, {'X-Requested-With': 'XMLHttpRequest'});
     xhr.send(xhrParams);
     if (!async) {
       xhr.onreadystatechange(xhr);
@@ -93,16 +92,20 @@ function CuriousXhr() {
   var xhr = new XHR();
 
   // create a new scope with its own "success_cb"
-  function _request(url, data, params, content_type, method) {
+  function _request(url, data, params, content_type, method, ignore_requested_with) {
     var success_cb = null;
     var error_cb = null;
+
+    var headers = { 'Content-Type': content_type ? content_type : 'text/plain' }
+    if (!ignore_requested_with)
+      headers['X-Requested-With'] = 'XMLHttpRequest';
 
     xhr.request({
       url: url,
       body: (method === 'POST' && data) ? JSON.stringify(data) : null,
       params: params,
       method: method,
-      headers: { 'Content-Type': content_type ? content_type : 'text/plain' },
+      headers: headers,
       callback: function(response, xhr) {
         if (xhr.status >= 200 && xhr.status < 300) {
           if (success_cb) {
@@ -138,13 +141,13 @@ function CuriousXhr() {
     return { success: success, error: error };
   }
 
-  function post(url, data, params, content_type) {
-    var x = _request(url, data, params, content_type, 'POST');
+  function post(url, data, params, content_type, ignore_requested_with) {
+    var x = _request(url, data, params, content_type, 'POST', ignore_requested_with);
     return x;
   }
 
-  function get(url, data, params, content_type) {
-    var x = _request(url, data, params, content_type, 'GET');
+  function get(url, data, params, content_type, ignore_requested_with) {
+    var x = _request(url, data, params, content_type, 'GET', ignore_requested_with);
     return x;
   }
 
