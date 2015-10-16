@@ -66,8 +66,10 @@
 
     append: function(term, relationship, obj_f) {
       this.terms.push(term);
-      this.relationships.push(relationship);
-      this.objfs.push(obj_f);
+      if (relationship) {
+        this.relationships.push(relationship);
+        this.objfs.push(obj_f);
+      }
       return this;
     },
 
@@ -79,12 +81,12 @@
       return this.append(new QueryTermFollow(s), relationship);
     },
 
-    having: function(s, relationship) {
-      return this.append(new QueryTermHaving(s), relationship);
+    having: function(s) {
+      return this.append(new QueryTermHaving(s));
     },
 
-    not_having: function(s, relationship) {
-      return this.append(new QueryTermNotHaving(s), relationship);
+    not_having: function(s) {
+      return this.append(new QueryTermNotHaving(s));
     },
 
     with: function(s, relationship) {
