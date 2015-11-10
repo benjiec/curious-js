@@ -122,6 +122,15 @@
       clt.get(q, this.relationships, this.objfs,
               this.params, this.existing_objects,
               objects_cb, trees_cb);
+    },
+
+    promise: function(clt) {
+      var q = this.query();
+      var self = this;
+      return new Promise(function(resolve, reject) {
+        clt.get(q, self.relationships, self.objfs, self.params, self.existing_objects,
+                function(objects) { resolve(objects); });
+      });
     }
   };
 
