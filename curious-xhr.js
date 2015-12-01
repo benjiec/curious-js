@@ -102,7 +102,7 @@ function CuriousXhr() {
 
     xhr.request({
       url: url,
-      body: (method === 'POST' && data) ? JSON.stringify(data) : null,
+      body: ((method === "POST" || method === "PUT") && data) ? JSON.stringify(data) : null,
       params: params,
       method: method,
       headers: headers,
@@ -148,17 +148,23 @@ function CuriousXhr() {
   }
 
   function post(url, data, params, content_type, ignore_requested_with) {
-    var x = _request(url, data, params, content_type, 'POST', ignore_requested_with);
+    var x = _request(url, data, params, content_type, "POST", ignore_requested_with);
+    return x;
+  }
+
+  function put(url, data, params, content_type, ignore_requested_with) {
+    var x = _request(url, data, params, content_type, "PUT", ignore_requested_with);
     return x;
   }
 
   function get(url, data, params, content_type, ignore_requested_with) {
-    var x = _request(url, data, params, content_type, 'GET', ignore_requested_with);
+    var x = _request(url, data, params, content_type, "GET", ignore_requested_with);
     return x;
   }
 
   return {
     post: post,
+    put: put,
     get: get
   };
 }
