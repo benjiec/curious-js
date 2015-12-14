@@ -6,25 +6,29 @@
   var QueryTermFollow = function(term) {
     this.term = term;
     this.to_s = function() { return this.term; };
-    this.implicit_join = false;
+    this.conditional = false;
+    this.left = false;
   };
 
   var QueryTermHaving = function(term) {
     this.term = term;
     this.to_s = function() { return '+('+term+')'; };
-    this.implicit_join = true;
+    this.conditional = true;
+    this.left = false;
   };
 
   var QueryTermNotHaving = function(term) {
     this.term = term;
     this.to_s = function() { return '-('+term+')'; };
-    this.implicit_join = true;
+    this.conditional = true;
+    this.left = false;
   };
 
   var QueryTermWith = function(term) {
     this.term = term;
     this.to_s = function() { return '?('+term+')'; };
-    this.implicit_join = true;
+    this.conditional = false;
+    this.left = true;
   };
 
   function make_obj(klass) {
@@ -46,7 +50,9 @@
       var s = [];
       for (var i=0; i<this.terms.length; i++) {
         if (i > 0) {
-          if (!this.terms[i-1].implicit_join && !this.terms[i].implicit_join)
+          if (this.terms[i].conditional)
+            s.push(' ');
+          else if (!this.terms[i].conditional && !this.terms[i].left && !this.terms[i-1].left)
             s.push(', ');
           else
             s.push(' ');
