@@ -1,0 +1,3 @@
+#!/bin/bash
+mkdir -p doc
+jsdoc --destination doc curious2.js "$@"
