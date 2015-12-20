@@ -108,7 +108,7 @@
   };
   QueryTermNotHaving.prototype = new QueryTerm();
 
-  QueryTermHaving.prototype.conditional = function () { return true; };
+  QueryTermNotHaving.prototype.conditional = function () { return true; };
 
   QueryTermNotHaving.prototype.toString = function () {
     return '-(' + this.term() + ')';
@@ -129,7 +129,7 @@
   };
   QueryTermWith.prototype = new QueryTerm();
   
-  QueryTermHaving.prototype.leftJoin = function () { return true; };
+  QueryTermWith.prototype.leftJoin = function () { return true; };
 
   QueryTermWith.prototype.toString = function () {
     return '?(' + this.term() + ')';

@@ -310,7 +310,7 @@ describe('CuriousQuery', function () {
       it('should correctly insert into a query', function () {
         var q = startingQuery[having.word](havingClause)
           .follow('Experiment.reaction_set', 'reactions');
-        expect(q.query()).to.equal(expectedQuery + ' Experiment.reaction_set');
+        expect(q.query()).to.equal(expectedQuery + ', Experiment.reaction_set');
       });
     });
   });
@@ -434,7 +434,7 @@ describe('CuriousQuery', function () {
     var excludedProperties;
     var combinedQueryString = (
       'Experiment(id=302) ?(Experiment.compounds_of_interest)'
-      + ' Experiment.reaction_set +(Reaction.subjects(name="s481466"))'
+      + ' Experiment.reaction_set +(Reaction.subjects(name="s481466")),'
       + ' Reaction.dataset_set, Dataset.attachment_set'
     );
     var query1;
