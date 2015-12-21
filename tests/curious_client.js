@@ -5,7 +5,7 @@
 var http = require('http');
 var axios = require('axios');
 var expect = require('chai').expect;
-var curious = require('../curious2.js');
+var curious = require('../curious.js');
 var examples = require('./examples.js');
 
 // TESTS

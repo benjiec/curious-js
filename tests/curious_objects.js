@@ -3,7 +3,7 @@
 'use strict';
 
 var expect = require('chai').expect;
-var curious = require('../curious2.js');
+var curious = require('../curious.js');
 var examples = require('./examples.js');
 
 // TESTS

@@ -21,7 +21,7 @@
   "dependencies": {
   },
   "devDependencies": {
-    "axios": "~0.5.4",
+    "axios": "~0.8.1",
     "chai": "~2.3.0",
     "jsdoc": "~3.3.0",
     "mocha": "~2.2.5"

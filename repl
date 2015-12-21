@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var repl = require('repl');
-var curious = require('./curious2.js');
+var curious = require('./curious.js');
 
 var replServer = repl.start({
   prompt: 'curious-js > ',
