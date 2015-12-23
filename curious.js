@@ -1010,7 +1010,7 @@
   function _groupArraysOfObjectsByID(arrayOfArraysOfObjects) {
     return arrayOfArraysOfObjects.map(function (arrayOfObjects) {
       if (arrayOfObjects) {
-        return CuriousObjects.groupObjectsByID(arrayOfArraysOfObjects[i]);
+        return CuriousObjects.groupObjectsByID(arrayOfObjects);
       } else {
         return null;
       }
