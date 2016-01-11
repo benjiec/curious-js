@@ -1133,6 +1133,8 @@
     ex = window;
   } else if (typeof exports !== 'undefined' && exports) {
     ex = exports;
+  } else if (typeof self !== 'undefined' && self) {
+    ex = self;
   }
 
   ex.CuriousObjects = CuriousObjects;
