@@ -1093,7 +1093,7 @@
         var args;
 
         if (!quiet) {
-          console.warn(q);
+          console.info(q);
         }
 
         if (existingObjects) {
