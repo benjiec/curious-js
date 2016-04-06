@@ -668,9 +668,9 @@
             // got all the fields assigned, so we should do it ourselves just
             // in case for any fields the constructor might have missed.
             queryData.fields.forEach(function (fieldName) {
-              if (!obj.hasOwnProperty(fieldName)) {
-                obj[fieldName] = objectData[fieldName];
-              }
+              // NOTE: don't check for obj.hasOwnProperty - we actually want to
+              // override existing fields in obj
+              obj[fieldName] = objectData[fieldName];
             });
 
           } else {
