@@ -1091,6 +1091,7 @@
        */
       performQuery: function (q, relationships, constructors, params, existingObjects) {
         var args;
+        relationships = relationships || [];
 
         if (!quiet) {
           console.info(q);
