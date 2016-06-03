@@ -154,8 +154,8 @@ function CuriousXhr() {
     return x;
   }
 
-  function post_form_data(url, form_data, content_type) {
-    var x = _request(url, form_data, null, content_type, "POST");
+  function post_form_data(url, form_data, content_type, ignore_requested_with) {
+    var x = _request(url, form_data, null, content_type, "POST", ignore_requested_with);
     return x;
   }
 
@@ -173,7 +173,6 @@ function CuriousXhr() {
 
   return {
     post: post,
-    post_form_data: post_form_data,
     put: put,
     get: get
   };
