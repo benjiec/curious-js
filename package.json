@@ -12,14 +12,14 @@
       "homepage": "http://myw.github.io"
     }
   ],
-  "version": "0.0.1",
+  "version": "2.0.1",
   "license": "MIT",
   "ignore": [],
   "main": [
     "./curious.js"
   ],
   "scripts": {
-    "test": "mocha --recursive tests"
+    "test": "./run_tests"
   },
   "dependencies": {
   },
