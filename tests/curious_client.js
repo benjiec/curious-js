@@ -29,36 +29,57 @@ describe('CuriousClient', function () {
   describe('#performQuery', function () {
 
     it('should work with axios', function (done) {
-      var client = new curious.CuriousClient(CURIOUS_URL, function (url, args) {
-        // axios returns the server's response nested within an object
-        // (response.data); we add a tiny filter function to pull that server
-        // response out
-        return axios.post(url, args)
-          .then(function (response) { return response.data; });
-      }, null, true);
+      var requestFunctions;
+      // Set the global axios variable to test defaults
+      if (typeof global !== 'undefined' && !global.axios) {
+        global.axios = axios;
+      }
 
-      client.performQuery(
-        'query does not matter',
-        ['experiments', 'reactions']
-      )
-      .then(function (response) {
-        try {
-          var expectedObjects = examples.expectedObjects();
-          expect(response).to.deep.equal({
-            trees: [null, null],
-            objects: {
-              experiments: curious.CuriousObjects.values(expectedObjects.experiments),
-              reactions: curious.CuriousObjects.values(expectedObjects.reactions),
-            },
+      requestFunctions = [
+        curious.CuriousClient.wrappers.axios(axios),
+        curious.CuriousClient.wrappers.axios(axios.post),
+        curious.CuriousClient.wrappers.axios()
+      ];
+
+      try {
+        requestFunctions.forEach(function (requestFunction) {
+          var client = new curious.CuriousClient(
+            CURIOUS_URL,
+            requestFunction,
+            null,
+            true
+          );
+
+          client.performQuery(
+            'query does not matter',
+            ['experiments', 'reactions']
+          )
+          .then(function (response) {
+            var expectedObjects = examples.expectedObjects();
+            expect(response).to.deep.equal({
+              trees: [null, null],
+              objects: {
+                experiments: curious.CuriousObjects.values(expectedObjects.experiments),
+                reactions: curious.CuriousObjects.values(expectedObjects.reactions),
+              },
+            });
+          }, function (error) {
+            throw error;
           });
-          done();
+
+        });
+
+        // Clean up the global axios variable
+        if (typeof global !== 'undefined' && global.axios) {
+          delete global.axios;
         }
-        catch (error) {
-          done(error);
-        }
-      }, function (error) {
-        throw error;
-      });
+
+        done();
+      }
+      catch (error) {
+        done(error);
+      }
+
     });
   });
 });

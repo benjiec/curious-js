@@ -5,6 +5,19 @@
  */
 (function () {
   'use strict';
+
+  var ex; // Alias for exporting to window or CommonJS exports
+
+  // Export either to browser window or CommonJS module
+  if (typeof window !== 'undefined' && window) {
+    ex = window;
+  } else if (typeof exports !== 'undefined' && exports) {
+    ex = exports;
+  } else if (typeof self !== 'undefined' && self) {
+    ex = self;
+  }
+
+
   // QUERY TERMS
 
   /**
@@ -1032,7 +1045,9 @@
    *
    *   <p>Any function that meets the signature, makes a <code>POST</code> request and
    *   returns a thenable that resolves to the parsed JSON of the curious
-   *   server's response will work.</p>
+   *   server's response will work. Note that axios.post and $http.post wrap the
+   *   response in an object, and so require wrapper functions to be used.
+   *   See {@link module:curious.CuriousClient.wrappers} for the wrappers.</p>
    * @param {Object} clientDefaultArgs
    *   Default parameters to send to the serever with every query performed by
    *   this client; see {@link module:curious.CuriousClient#performQuery} for an
@@ -1118,24 +1133,119 @@
     };
   };
 
-  CuriousClient.axios_post = function(axios) {
-    // axios returns the server's response nested within an object
+  /**
+   * Common code of convenience functions that make it easier to interact
+   * with a variety of http clients.
+   *
+   * @example
+   * var axiosWrapper = _dataUnwrapper.bind(this, 'axios');
+   *
+   * @private
+   * @memberof module:curious.CuriousClient.wrappers
+   *
+   * @param {string} defaultModuleName
+   *   The default module object name to use if one is not provided. Should
+   *   be bound to a string when actually used as a wrapper.
+   *
+   * @param {Object?} moduleObjectOrFunction
+   *   Either the module to use, like axios/$http, or the posting function
+   *   itself, like axios.post.
+   *
+   * @return {function(string, Object): Promise}
+   *  An ideal function for making requests in curious client:
+   *  takes the url and arguments, makes an axios post request, and returns
+   *  a promise that resolves directly to the returned query data (unwrapped).
+   */
+  function _unwrapResponseData(defaultModuleName, moduleObjectOrFunction) {
+    var mod;
+    var postRequestFunction;
+
+    // Prevent code injection
+    if (/[^$.\w'"\[\]]/.test(defaultModuleName)) {
+      throw new Error('Invalid module name: likely code injection attempt');
+    }
+
+    // Default to the provided module name, but if one is not provided,
+    // look in the global namespace, then in the this context, and finally,
+    // just evaluate the variable with that name and see if it resovles
+    // to something.
+    // XXX uses `eval`, only as a last resort. there is no way around this.
+    /* eslint-disable no-eval */
+    mod = moduleObjectOrFunction
+      || (typeof module !== 'undefined' && module[defaultModuleName])
+      || (typeof exports !== 'undefined' && exports[defaultModuleName])
+      || (typeof global !== 'undefined' && global[defaultModuleName])
+      || (typeof window !== 'undefined' && window[defaultModuleName])
+      || eval(defaultModuleName);
+    /* eslint-enable no-eval */
+
+    // If the module provided has a `post` method, use that. Otherwise,
+    // just call the "module" itself: this allows passing in either
+    // $http or $http.post, for example
+    postRequestFunction = mod.post || mod;
+
+    // axios/angular return the server's response nested within an object
     // (response.data); here we return a tiny filter function to pull that
     // server response out
     return function (url, args) {
-      return axios.post(url, args).then(function (response) { return response.data; });
+      return postRequestFunction(url, args)
+        .then(function (response) {
+          return response.data;
+        });
     };
-  };
-
-  // Export either to browser window or CommonJS module
-  var ex;
-  if (typeof window !== 'undefined' && window) {
-    ex = window;
-  } else if (typeof exports !== 'undefined' && exports) {
-    ex = exports;
-  } else if (typeof self !== 'undefined' && self) {
-    ex = self;
   }
+
+  /**
+   * Convenience functions for interfacing with a variety of common HTTP/ajax
+   * client libraries.
+   *
+   * Note that jQuery.post does not need a wrapper.
+   *
+   * @namespace module:curious.CuriousClient.wrappers
+   */
+  CuriousClient.wrappers = {};
+
+  /**
+   * Convenience function to make it easier to interact with axios responses:
+   * axios is not required by this module at all.
+   *
+   * @example
+   * var client = new CuriousClient(CURIOUS_URL, CuriousClient.wrappers.axios() ...)
+   * var client = new CuriousClient(CURIOUS_URL, CuriousClient.wrappers.axios(axios) ...)
+   *
+   * @memberof module:curious.CuriousClient.wrappers
+   *
+   * @param {Object?} axiosModuleOrFunction
+   *   The axios module, or axios.post. Defaults to using whatever
+   *   <code>axios</code> resolves to.
+   *
+   * @return {function(string, Object): Promise}
+   *  An ideal function for making requests in curious client:
+   *  takes the url and arguments, makes an axios post request, and returns
+   *  a promise that resolves directly to the returned query data (unwrapped).
+   */
+  CuriousClient.wrappers.axios = _unwrapResponseData.bind(ex, 'axios');
+
+  /**
+   * Convenience function to make it easier to interact with angular responses:
+   * angular is not required by this module at all.
+   *
+   * @example
+   * var client = new CuriousClient(CURIOUS_URL, CuriousClient.wrappers.angular() ...)
+   * var client = new CuriousClient(CURIOUS_URL, CuriousClient.wrappers.angular($http) ...)
+   *
+   * @memberof module:curious.CuriousClient.wrappers
+   *
+   * @param {Object?} angularHttpServiceOrPostFunction
+   *   The angular $http service object, or $http.post. Defaults to using
+   *   whatever <code>$http</code> resolves to.
+   *
+   * @return {function(string, Object): Promise}
+   *  An ideal function for making requests in curious client:
+   *  takes the url and arguments, makes an axios post request, and returns
+   *  a promise that resolves directly to the returned query data (unwrapped).
+   */
+  CuriousClient.wrappers.angular = _unwrapResponseData.bind(ex, '$http');
 
   ex.CuriousObjects = CuriousObjects;
   ex.CuriousClient = CuriousClient;
