@@ -1,0 +1,28 @@
+#!/bin/bash -v
+
+cd `dirname $0`;
+
+archivepath=`mktemp`
+current_branch=`git symbolic-ref --short -q HEAD`
+current_head=`git rev-parse HEAD`
+
+./make_doc
+
+# Arcive documentation somewhere safe
+tar -cv -f $archivepath -C doc .
+
+# Switch to the gh-pages branch & clean everything
+git checkout gh-pages && rm -rf ./*
+
+# Extract the archived documentation
+tar xvf $archivepath
+
+git add .
+git commit -m "Update documentation to $current_head"
+git push
+
+rm -vf $archivepath
+
+git checkout $current_branch
+
+cd -
