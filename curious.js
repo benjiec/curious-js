@@ -1146,17 +1146,18 @@
    * @param {string} defaultModuleName
    *   The default module object name to use if one is not provided. Should
    *   be bound to a string when actually used as a wrapper.
-   *
    * @param {Object?} moduleObjectOrFunction
    *   Either the module to use, like axios/$http, or the posting function
    *   itself, like axios.post.
+   * @param {Object?} options
+   *   Additional options to send to the requesting function.
    *
    * @return {function(string, Object): Promise}
    *  An ideal function for making requests in curious client:
    *  takes the url and arguments, makes an axios post request, and returns
    *  a promise that resolves directly to the returned query data (unwrapped).
    */
-  function _unwrapResponseData(defaultModuleName, moduleObjectOrFunction) {
+  function _unwrapResponseData(defaultModuleName, moduleObjectOrFunction, options) {
     var mod;
     var postRequestFunction;
 
@@ -1188,7 +1189,7 @@
     // (response.data); here we return a tiny filter function to pull that
     // server response out
     return function (url, args) {
-      return postRequestFunction(url, args)
+      return postRequestFunction(url, args, options || {})
         .then(function (response) {
           return response.data;
         });
@@ -1213,11 +1214,14 @@
    * var client = new CuriousClient(CURIOUS_URL, CuriousClient.wrappers.axios() ...)
    * var client = new CuriousClient(CURIOUS_URL, CuriousClient.wrappers.axios(axios) ...)
    *
+   * @function
    * @memberof module:curious.CuriousClient.wrappers
    *
    * @param {Object?} axiosModuleOrFunction
-   *   The axios module, or axios.post. Defaults to using whatever
-   *   <code>axios</code> resolves to.
+   *   Either the <code>axios</code> module itself, or <code>axios.post</code>.
+   *   Defaults to using whatever <code>axios</code> resolves to.
+   * @param {Object?} options
+   *   Additional options to send to the requesting function.
    *
    * @return {function(string, Object): Promise}
    *  An ideal function for making requests in curious client:
@@ -1234,18 +1238,53 @@
    * var client = new CuriousClient(CURIOUS_URL, CuriousClient.wrappers.angular() ...)
    * var client = new CuriousClient(CURIOUS_URL, CuriousClient.wrappers.angular($http) ...)
    *
+   * @function
    * @memberof module:curious.CuriousClient.wrappers
    *
    * @param {Object?} angularHttpServiceOrPostFunction
-   *   The angular $http service object, or $http.post. Defaults to using
-   *   whatever <code>$http</code> resolves to.
+   *   Either the Angular <code>$http</code> service object, or <code>$http.post</code>.
+   *   Defaults to using whatever <code>$http</code> resolves to.
+   * @param {Object?} options
+   *   Additional options to send to the requesting function.
    *
    * @return {function(string, Object): Promise}
    *  An ideal function for making requests in curious client:
-   *  takes the url and arguments, makes an axios post request, and returns
+   *  takes the url and arguments, makes a <code>POST</code> request and returns
    *  a promise that resolves directly to the returned query data (unwrapped).
    */
   CuriousClient.wrappers.angular = _unwrapResponseData.bind(ex, '$http');
+
+  /**
+   * Convenience function to make it easier to interact with Polymer's
+   * <code>&lt;iron-request&gt;</code> element.
+   *
+   * @example
+   * var client = new CuriousClient(CURIOUS_URL, CuriousClient.wrappers.ironRequest(this.$.xhr) ...)
+   *
+   * @memberof module:curious.CuriousClient.wrappers
+   *
+   * @param {PolymerElement} ironRequestElement
+   *   The <code>iron-request</code> element being used to make the request.
+   * @param {Object?} options
+   *   Additional options to send to the requesting function.
+   *
+   * @return {function(string, Object): Promise}
+   *  An ideal function for making requests in curious client:
+   *  takes the url and arguments, makes a <code>POST</code> request with
+   *  <code>ironRequestElement</code>, and returns a promise that resolves
+   *  directly to the returned query data (unwrapped).
+   */
+  CuriousClient.wrappers.ironRequest = function (ironRequestElement, options) {
+    return function (url, args) {
+      var requestParameters = Object.create(Object.prototype, options || {});
+
+      requestParameters.method = 'POST';
+      requestParameters.url = url;
+      requestParameters.params = args;
+
+      return ironRequestElement.send(requestParameters);
+    };
+  };
 
   ex.CuriousObjects = CuriousObjects;
   ex.CuriousClient = CuriousClient;
