@@ -101,7 +101,7 @@
     return this;
   };
   QueryTermHaving.prototype = new QueryTerm();
-  
+
   QueryTermHaving.prototype.conditional = function () { return true; };
 
   QueryTermHaving.prototype.toString = function () {
