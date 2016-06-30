@@ -1280,7 +1280,7 @@
 
       requestParameters.method = 'POST';
       requestParameters.url = url;
-      requestParameters.params = args;
+      requestParameters.body = args;
 
       return ironRequestElement.send(requestParameters);
     };
