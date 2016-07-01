@@ -1,4 +1,4 @@
-/***
+/**
  * Module for curious client-side query construction and JSON parsing.
  *
  * @module curious
@@ -31,11 +31,14 @@
    * @param {string} term The internal term text to use.
    */
   var QueryTerm = function (term) {
-    /** The term contents
-    * @readonly
-    * @public
-    */
+    /**
+     * The term contents
+      * @readonly
+      * @public
+      * @return {string} The term contents
+      */
     this.term = function () { return term; };
+
     return this;
   };
 
@@ -79,6 +82,8 @@
    * @class
    * @extends {module:curious~QueryTerm}
    * @alias module:curious~QueryTermFollow
+   *
+   * @param {string} term The term contents.
    */
   var QueryTermFollow = function (term) {
     QueryTerm.call(this, term);
@@ -94,6 +99,8 @@
    * @class
    * @extends {module:curious~QueryTerm}
    * @alias module:curious~QueryTermHaving
+   *
+   * @param {string} term The term contents.
    */
   var QueryTermHaving = function (term) {
     QueryTerm.call(this, term);
@@ -111,8 +118,12 @@
   /**
    * Make a term that performs a negative filter.
    *
+   * @private
    * @class
    * @extends {module:curious~QueryTerm}
+   * @alias module:curious~QueryTermHaving
+   *
+   * @param {string} term The term contents.
    */
   var QueryTermNotHaving = function (term) {
     QueryTerm.call(this, term);
@@ -134,6 +145,8 @@
    * @class
    * @extends {module:curious~QueryTerm}
    * @alias module:curious~QueryTermWith
+   *
+   * @param {string} term The term contents.
    */
   var QueryTermWith = function (term) {
     QueryTerm.call(this, term);
@@ -247,9 +260,9 @@
       // commas are inserted to ensure that the objects that correspond to
       // those terms are returned
       if (termIndex > 0) {
-        if (term.conditional())
+        if (term.conditional()) {
           query += ' ';
-        else if (
+        } else if (
           !term.conditional()
           && !terms[termIndex - 1].leftJoin()
           && !term.leftJoin()
@@ -337,7 +350,7 @@
       this.terms.push(termObject);
       this.relationships.push(relationship);
     } else {
-      throw (
+      throw new Error(
         'Must specify a term and a relationship to append to: ('
         + this.query()
         + ')'
@@ -387,7 +400,7 @@
       // reference copy
       this.terms[this.terms.length - 1] = lastTerm;
     } else {
-      throw('Must add terms before appending "' + termObject + '" to them.');
+      throw new Error('Must add terms before appending "' + termObject + '" to them.');
     }
 
     return this;
@@ -418,6 +431,8 @@
    *   The contents of the starting term.
    * @param {string} relationship
    *   The name of this term in inter-term relationships
+   * @param {Function} customConstructor
+   *   A custom constructor function for the resulting objects.
    *
    * @return {CuriousQuery} The query object, with the term appended
    */
@@ -496,7 +511,7 @@
     if (this.objectFactories.length) {
       this.objectFactories[this.objectFactories.length - 1] = factoryFunction;
     } else {
-      throw('Cannot specify custom object constructor before starting a query');
+      throw new Error('Cannot specify custom object constructor before starting a query');
     }
 
     return this;
@@ -602,7 +617,6 @@
    * @alias module:curious.CuriousObjects
    */
   var CuriousObjects = (function () {
-
     /**
      * Base (default) class for an object returned from a Curious query
      *
@@ -662,7 +676,6 @@
       var objects = [];
 
       if (queryData.objects instanceof Array) {
-
         queryData.objects.forEach(function (objectDataArray, objectIndex) {
           var url = queryData.urls[objectIndex];
           var objectData = {};
@@ -685,7 +698,6 @@
               // override existing fields in obj
               obj[fieldName] = objectData[fieldName];
             });
-
           } else {
             // The CuriousObject constructor does this automatically
             obj = new CuriousObject(objectData);
@@ -713,6 +725,8 @@
      *
      * @param {string[]} relationships
      *   The names of the relationships objects will have to one another.
+     * @param {Function[]} customConstructors
+     *   The custom constructors for curious object classes.
      * @param {Object} queryJSONResponse
      *   An object of fields holding the query response, as returned and parsed
      *   directly from JSON without any post-processing.
@@ -737,7 +751,7 @@
      *   The existing objects. Each object in the array is a mapping of an id
      *   to its corresponding object.
      *
-     * @return {{objects: Object[], trees: Object[]}
+     * @return {{objects: Object[], trees: Object[]}}
      *   The parsed objects. <code>trees</code> holds any hierarchical
      *   relationships, for recursive queries.
      */
@@ -748,7 +762,6 @@
       var trees = [];
 
       if (queryJSONResponse.data instanceof Array) {
-
         queryJSONResponse.data.forEach(function (queryData, queryIndex) {
           var queryObjects; // the objects parsed from this query
           var objectsByID = {};
@@ -762,7 +775,7 @@
             // Only pass in custom constructors if we need to
             (customConstructors instanceof Array)
               ? customConstructors[queryIndex]
-              : undefined
+              : null
           );
 
           queryObjects.forEach(function (object) {
@@ -787,7 +800,6 @@
         // For each subquery, add a relationship to the results of the next
         // subquery and then a reverse relationship
         queryJSONResponse.results.forEach(function (queryResult, queryIndex) {
-
           // An array of pairs: [objectID, srcObjectID], where
           // the srcObjectID points to the ID of the object that this
           // object is joined from (the 'source' of the join)
@@ -820,7 +832,8 @@
             joinIDPairs.forEach(function (joinIDPair) {
               var id = joinIDPair[0];
               var srcID = joinIDPair[1]; // the ID of the parent
-              var obj, srcObj; // the corresponding objects
+              var obj;
+              var srcObj; // the corresponding objects
 
 
               if (srcID) {
@@ -929,8 +942,8 @@
      *                  with duplicates removed, in the same order as the input
      *                  object list.
      */
-    function idString(objects) {
-      var ids = idList(objects);
+    function idString(arrayOfObjects) {
+      var ids = idList(arrayOfObjects);
       return ids.join(',');
     }
 
@@ -941,7 +954,6 @@
       idList: idList,
       idString: idString,
     };
-
   }());
 
   // QUERY CLIENT
@@ -953,7 +965,7 @@
    * @param {string[]} relationships The relationship names
    * @param {Array<Array<Object>>} objects The objects from each relationship
    *
-   * @return {Object<string,Array>}
+   * @return {Object<string,Array>} The rearranged results
    */
   function _convertResultsToOutput(relationships, objects) {
     var output = {};
@@ -1022,11 +1034,13 @@
    */
   function _groupArraysOfObjectsByID(arrayOfArraysOfObjects) {
     return arrayOfArraysOfObjects.map(function (arrayOfObjects) {
+      var group = null;
+
       if (arrayOfObjects) {
-        return CuriousObjects.groupObjectsByID(arrayOfObjects);
-      } else {
-        return null;
+        group = CuriousObjects.groupObjectsByID(arrayOfObjects);
       }
+
+      return group;
     });
   }
 
@@ -1059,7 +1073,6 @@
    *   A client object with a single performQuery method.
    */
   var CuriousClient = function (curiousURL, request, clientDefaultArgs, quiet) {
-
     return {
       /**
        * Perform a Curious query and return back parsed objects.
@@ -1106,13 +1119,16 @@
        */
       performQuery: function (q, relationships, constructors, params, existingObjects) {
         var args;
+        var groupedExistingObjects;
 
         if (!quiet) {
+          /* eslint-disable no-console */
           console.info(q);
+          /* eslint-enable no-console */
         }
 
         if (existingObjects) {
-          existingObjects = _groupArraysOfObjectsByID(existingObjects);
+          groupedExistingObjects = _groupArraysOfObjectsByID(existingObjects);
         }
 
         args = _getArgs(params, clientDefaultArgs);
@@ -1121,7 +1137,7 @@
         return request(curiousURL, args)
           .then(function (response) {
             var parsedResult = CuriousObjects.parse(
-              relationships, constructors, response.result, existingObjects
+              relationships, constructors, response.result, groupedExistingObjects
             );
 
             return {
