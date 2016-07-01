@@ -141,7 +141,7 @@
     return this;
   };
   QueryTermWith.prototype = new QueryTerm();
-  
+
   QueryTermWith.prototype.leftJoin = function () { return true; };
 
   QueryTermWith.prototype.toString = function () {
@@ -1153,9 +1153,9 @@
    *   Additional options to send to the requesting function.
    *
    * @return {function(string, Object): Promise}
-   *  An ideal function for making requests in curious client:
-   *  takes the url and arguments, makes an axios post request, and returns
-   *  a promise that resolves directly to the returned query data (unwrapped).
+   *  A function that meets the requirements to make requests in the curious client:
+   *  takes the url and arguments, makes a POST request, and returns
+   *  a promise that resolves directly to the returned query response (unwrapped).
    */
   function _unwrapResponseData(defaultModuleName, moduleObjectOrFunction, options) {
     var mod;
@@ -1224,9 +1224,9 @@
    *   Additional options to send to the requesting function.
    *
    * @return {function(string, Object): Promise}
-   *  An ideal function for making requests in curious client:
+   *  A function that meets the requirements to make requests in the curious client:
    *  takes the url and arguments, makes an axios post request, and returns
-   *  a promise that resolves directly to the returned query data (unwrapped).
+   *  a promise that resolves directly to the returned query response (unwrapped).
    */
   CuriousClient.wrappers.axios = _unwrapResponseData.bind(ex, 'axios');
 
@@ -1248,43 +1248,59 @@
    *   Additional options to send to the requesting function.
    *
    * @return {function(string, Object): Promise}
-   *  An ideal function for making requests in curious client:
+   *  A function that meets the requirements to make requests in the curious client:
    *  takes the url and arguments, makes a <code>POST</code> request and returns
-   *  a promise that resolves directly to the returned query data (unwrapped).
+   *  a promise that resolves directly to the returned query response (unwrapped).
    */
   CuriousClient.wrappers.angular = _unwrapResponseData.bind(ex, '$http');
 
   /**
    * Convenience function to make it easier to interact with Polymer's
-   * <code>&lt;iron-request&gt;</code> element.
+   * <code>&lt;iron-ajax&gt;</code> element.
    *
    * @example
-   * var client = new CuriousClient(CURIOUS_URL, CuriousClient.wrappers.ironRequest(this.$.xhr) ...)
+   * var client = new CuriousClient(CURIOUS_URL, CuriousClient.wrappers.ironAjax(this.$.xhr) ...)
    *
    * @memberof module:curious.CuriousClient.wrappers
    *
-   * @param {PolymerElement} ironRequestElement
-   *   The <code>iron-request</code> element being used to make the request.
+   * @param {PolymerElement} ironAjaxElement
+   *   The <code>iron-ajax</code> element being used to make the request.
    * @param {Object?} options
    *   Additional options to send to the requesting function.
    *
    * @return {function(string, Object): Promise}
-   *  An ideal function for making requests in curious client:
+   *  A function that meets the requirements to make requests in the curious client:
    *  takes the url and arguments, makes a <code>POST</code> request with
-   *  <code>ironRequestElement</code>, and returns a promise that resolves
-   *  directly to the returned query data (unwrapped).
+   *  <code>ironAjaxElement</code>, and returns a promise that resolves
+   *  directly to the returned query response (unwrapped).
    */
-  CuriousClient.wrappers.ironRequest = function (ironRequestElement, options) {
+  CuriousClient.wrappers.ironAjax = function (ironAjaxElement, options) {
     return function (url, args) {
-      var requestParameters = Object.create(Object.prototype, options || {});
+      var oldAutoValue;
+      var request;
 
-      requestParameters.method = 'POST';
-      requestParameters.url = url;
-      requestParameters.headers = requestParameters.headers || {};
-      requestParameters.headers['content-type'] = 'application/json';
-      requestParameters.body = args;
+      // Don't make requests while we're setting the properties
+      oldAutoValue = ironAjaxElement.get('auto');
+      ironAjaxElement.set('auto', false);
 
-      return ironRequestElement.send(requestParameters);
+      if (options) {
+        Object.keys(options).forEach(function (option) {
+          ironAjaxElement.set(option, options[option]);
+        });
+      }
+
+      ironAjaxElement.set('method', 'POST');
+      ironAjaxElement.set('url', url);
+      ironAjaxElement.set('contentType', 'application/json');
+      ironAjaxElement.set('body', args);
+
+      request = ironAjaxElement.generateRequest();
+
+      // Return auto to its old state
+      ironAjaxElement.set('auto', oldAutoValue);
+
+      // Return the promise that gets fired when the XHR completes.
+      return request.completes;
     };
   };
 
