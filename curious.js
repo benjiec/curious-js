@@ -1299,8 +1299,12 @@
       // Return auto to its old state
       ironAjaxElement.set('auto', oldAutoValue);
 
-      // Return the promise that gets fired when the XHR completes.
-      return request.completes;
+      // Return the promise that gets fired when the XHR completes, but parse
+      // out the actual response data, since the original promise resolves to
+      // the iron-request object
+      return request.completes.then(function (ironRequestObject) {
+        return ironRequestObject.response;
+      });
     };
   };
 
