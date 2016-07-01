@@ -1280,7 +1280,9 @@
 
       requestParameters.method = 'POST';
       requestParameters.url = url;
-      requestParameters.body = JSON.stringify(args);
+      requestParameters.headers = requestParameters.headers || {};
+      requestParameters.headers['content-type'] = 'application/json';
+      requestParameters.body = args;
 
       return ironRequestElement.send(requestParameters);
     };
