@@ -206,6 +206,77 @@
       });
     });
 
+    describe('#camelCase', function () {
+      var camelCase = curious.CuriousObjects.camelCase;
+
+      it('should replace all _ with a camel-casing', function () {
+        expect(camelCase('a_single')).to.equal('aSingle');
+        expect(camelCase('a_double_one')).to.equal('aDoubleOne');
+        expect(camelCase('a_triple_one_even')).to.equal('aTripleOneEven');
+        expect(camelCase('something_else_entirely')).to.equal('somethingElseEntirely');
+      });
+
+      it('should replace all - with a camel-casing', function () {
+        expect(camelCase('a-single')).to.equal('aSingle');
+        expect(camelCase('a-double-one')).to.equal('aDoubleOne');
+        expect(camelCase('a-triple-one-even')).to.equal('aTripleOneEven');
+      });
+
+      it('should correctly handle mixed - and _', function () {
+        expect(camelCase('a-first-mix')).to.equal('aFirstMix');
+        expect(camelCase('a_second-one')).to.equal('aSecondOne');
+        expect(camelCase('a-triple_one-even')).to.equal('aTripleOneEven');
+      });
+
+      it('should correctly handle multiple separators', function () {
+        expect(camelCase('a--single')).to.equal('aSingle');
+        expect(camelCase('a__single')).to.equal('aSingle');
+        expect(camelCase('a__double--one')).to.equal('aDoubleOne');
+        expect(camelCase('a_______many')).to.equal('aMany');
+        expect(camelCase('a__-_-__many')).to.equal('aMany');
+      });
+
+      it('should leave leading underscores or dashes', function () {
+        expect(camelCase('_a_single')).to.equal('_aSingle');
+        expect(camelCase('-a_single')).to.equal('-aSingle');
+        expect(camelCase('__a_single')).to.equal('__aSingle');
+        expect(camelCase('__a-single')).to.equal('__aSingle');
+        expect(camelCase('_-_a_single')).to.equal('_-_aSingle');
+      });
+
+      it('should leave trailing underscores or dashes', function () {
+        expect(camelCase('a_single_')).to.equal('aSingle_');
+        expect(camelCase('a_single-')).to.equal('aSingle-');
+        expect(camelCase('a_single__')).to.equal('aSingle__');
+        expect(camelCase('a-single__')).to.equal('aSingle__');
+        expect(camelCase('__a-single__')).to.equal('__aSingle__');
+        expect(camelCase('_-_a_single-_-')).to.equal('_-_aSingle-_-');
+      });
+
+      it('should leave periods alone', function () {
+        expect(camelCase('some_thing.prop')).to.equal('someThing.prop');
+      });
+
+      it('should overwrite existing casing', function () {
+        expect(camelCase('some_HTML_thing')).to.equal('someHtmlThing');
+        expect(camelCase('soMany_WORDS_might_Be_capitalized'))
+          .to.equal('somanyWordsMightBeCapitalized');
+      });
+
+      it('should correctly handle special-character variables like $, $$, _, __, etc.', function () {
+        expect(camelCase('_')).to.equal('_');
+        expect(camelCase('__')).to.equal('__');
+        expect(camelCase('$')).to.equal('$');
+        expect(camelCase('$$')).to.equal('$$');
+      });
+
+      it('should leave valid expressions alone:', function () {
+        expect(camelCase('word')).to.equal('word');
+        expect(camelCase('aCamelCasedExpression')).to.equal('aCamelCasedExpression');
+        expect(camelCase('_aPrefixedExpression')).to.equal('_aPrefixedExpression');
+      });
+    });
+
     describe('#parse', function () {
       var queryJSONResponse;
 

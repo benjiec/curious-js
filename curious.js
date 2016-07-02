@@ -947,12 +947,96 @@
       return ids.join(',');
     }
 
+    /**
+     * Camel case a string with - or _ separators:
+     *
+     * @example
+     * CuriousObjects.camelCase('this_is-someTHING') === 'thisIsSomething'
+     * CuriousObjects.camelCase('_alreadyDone') === '_alreadyDone'
+     *
+     * @memberof module:curious.CuriousObjects
+     *
+     * @param {string} input The string to camel-case.
+     *
+     * @return {string} The input, camel-cased.
+     */
+    function camelCase(input) {
+      var components;
+      var casedComponents;
+      var separators;
+      var output;
+
+      // For leading/trailing separators
+      separators = {
+        leading: {
+          re: /^[-_]+/g,
+          match: null,
+          text: '',
+        },
+        trailing: {
+          re: /[-_]+$/g,
+          match: null,
+          text: '',
+        },
+      };
+
+      // Match the leading/trailing separators and store the text
+      Object.keys(separators).forEach(function (key) {
+        var separatorType = separators[key];
+        separatorType.match = separatorType.re.exec(input);
+        if (separatorType.match) {
+          separatorType.text = separatorType.match[0];
+        }
+      });
+
+      if (separators.leading.text.length === input.length) {
+        // Special case: string consists entirely of separators: just return it
+        output = input;
+      } else {
+        // Only split the parts of the string that are not leading/trailing
+        // separators
+        components = input.substring(
+          separators.leading.text.length,
+          input.length - separators.trailing.text.length
+        ).split(/[_-]/);
+
+        // If we don't have anything to camel-case, just leave the body alone
+        if (components.length > 1) {
+          casedComponents = components.map(function (component, ix) {
+            // Normalize by lowercasing everything
+            var casedComponent = component.toLowerCase();
+
+            // Capitalize every word but the first
+            if (ix > 0) {
+              casedComponent = (
+                casedComponent.charAt(0).toUpperCase()
+                + casedComponent.slice(1)
+              );
+            }
+
+            return casedComponent;
+          });
+        } else {
+          casedComponents = components;
+        }
+
+        output = (
+          separators.leading.text
+          + casedComponents.join('')
+          + separators.trailing.text
+        );
+      }
+
+      return output;
+    }
+
     return {
       parse: parse,
       values: values,
       groupObjectsByID: groupObjectsByID,
       idList: idList,
       idString: idString,
+      camelCase: camelCase,
     };
   }());
 
