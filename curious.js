@@ -1253,7 +1253,7 @@
         }
 
         args = _getArgs(params, clientDefaultArgs);
-        args.q = q;
+        args.q = q.replace('\n', ' ');
 
         return request(curiousURL, args)
           .then(function (response) {
