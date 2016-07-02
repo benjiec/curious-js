@@ -131,10 +131,13 @@
   /**
    * Generate sample data as would be returned by a Curious server in JSON.
    *
+   * @param {boolean?} camelCase
+   *   If true, construct camel-cased versions of the objects.
+   *
    * @return {{experiments: Object<number, Object>, reactions: Object<number, Object>}}
    *   The objects expected to be constructed from @{link examples.response|the response}
    */
-  exports.expectedObjects = function () {
+  exports.expectedObjects = function (camelCase) {
     var exp;
     var rxns;
 
@@ -197,6 +200,21 @@
         __model: 'Reaction',
       },
     ];
+
+    if (camelCase) {
+      [exp].concat(rxns).forEach(function (object) {
+        Object.keys(object).forEach(function (key) {
+          var newKey = curious.CuriousObjects.makeCamelCase(key);
+          var value;
+
+          if (newKey !== key) {
+            value = object[key];
+            delete object[key];
+            object[newKey] = value;
+          }
+        });
+      });
+    }
 
     // Link foregin keys
     exp.reactions = rxns;

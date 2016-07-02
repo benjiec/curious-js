@@ -431,7 +431,7 @@
    *   The contents of the starting term.
    * @param {string} relationship
    *   The name of this term in inter-term relationships
-   * @param {Function} customConstructor
+   * @param {function} customConstructor
    *   A custom constructor function for the resulting objects.
    *
    * @return {CuriousQuery} The query object, with the term appended
@@ -627,9 +627,10 @@
      * @param {Object} objectData
      *   A plain JavaScript object representing the query data, as parsed from
      *   the returned JSON.
-     *
+     * @param {boolean?} camelCase
+     *   If true, construct camel-cased versions the fields in objectData.
      */
-    function CuriousObject(objectData) {
+    function CuriousObject(objectData, camelCase) {
       var newObject = this;
 
       // Special properties that aren't data-bearing, but are often convenient
@@ -638,7 +639,13 @@
 
       // Copy over the object data to be properties of the new CuriousObject
       Object.keys(objectData).forEach(function (key) {
-        newObject[key] = objectData[key];
+        var newKey = key;
+
+        if (camelCase) {
+          newKey = CuriousObjects.makeCamelCase(key);
+        }
+
+        newObject[newKey] = objectData[key];
       });
 
       return newObject;
@@ -666,13 +673,16 @@
      *   The url of every object, if they have one
      * @param {string} model
      *   The name of the Django model these objects come from
-     * @param {function} customConstructor
+     * @param {function?} customConstructor
      *   A constructor to use instead of the default CuriousObject constructor.
+     * @param {boolean?} camelCase
+     *   If true, construct camel-cased versions of the JSON objects returned
+     *   by the Curious server.
      *
      * @return {Array<CuriousObject|CustomConstructorClass>}
      *   An array of objects, which contain the data described in queryData.
      */
-    function _parseObjects(queryData, model, customConstructor) {
+    function _parseObjects(queryData, model, customConstructor, camelCase) {
       var objects = [];
 
       if (queryData.objects instanceof Array) {
@@ -694,13 +704,19 @@
             // got all the fields assigned, so we should do it ourselves just
             // in case for any fields the constructor might have missed.
             queryData.fields.forEach(function (fieldName) {
+              var newFieldName = fieldName;
+
+              if (camelCase) {
+                newFieldName = CuriousObjects.makeCamelCase(fieldName);
+              }
+
               // NOTE: don't check for obj.hasOwnProperty - we actually want to
               // override existing fields in obj
-              obj[fieldName] = objectData[fieldName];
+              obj[newFieldName] = objectData[fieldName];
             });
           } else {
             // The CuriousObject constructor does this automatically
-            obj = new CuriousObject(objectData);
+            obj = new CuriousObject(objectData, camelCase);
           }
 
           // Set the magic fields
@@ -725,7 +741,7 @@
      *
      * @param {string[]} relationships
      *   The names of the relationships objects will have to one another.
-     * @param {Function[]} customConstructors
+     * @param {function[]} customConstructors
      *   The custom constructors for curious object classes.
      * @param {Object} queryJSONResponse
      *   An object of fields holding the query response, as returned and parsed
@@ -750,13 +766,17 @@
      * @param {Array<Object<number,Object>>} existingObjects
      *   The existing objects. Each object in the array is a mapping of an id
      *   to its corresponding object.
+     * @param {boolean?} camelCase
+     *   If true, construct camel-cased versions of the JSON objects returned
+     *   by the Curious server.
      *
      * @return {{objects: Object[], trees: Object[]}}
      *   The parsed objects. <code>trees</code> holds any hierarchical
      *   relationships, for recursive queries.
      */
     function parse(
-      relationships, customConstructors, queryJSONResponse, existingObjects
+      relationships, customConstructors, queryJSONResponse, existingObjects,
+      camelCase
     ) {
       var combinedObjects = [];
       var trees = [];
@@ -775,7 +795,9 @@
             // Only pass in custom constructors if we need to
             (customConstructors instanceof Array)
               ? customConstructors[queryIndex]
-              : null
+              : null,
+
+            camelCase
           );
 
           queryObjects.forEach(function (object) {
@@ -813,6 +835,11 @@
 
           var forwardRelationshipName = relationships[queryIndex];
           var reverseRelationshipName = relationships[joinIndex];
+
+          if (camelCase) {
+            forwardRelationshipName = CuriousObjects.makeCamelCase(forwardRelationshipName);
+            reverseRelationshipName = CuriousObjects.makeCamelCase(reverseRelationshipName);
+          }
 
           var joinSourceObjects = combinedObjects[joinIndex];
           var joinDestinationObjects = combinedObjects[queryIndex];
@@ -951,8 +978,8 @@
      * Camel case a string with - or _ separators:
      *
      * @example
-     * CuriousObjects.camelCase('this_is-someTHING') === 'thisIsSomething'
-     * CuriousObjects.camelCase('_alreadyDone') === '_alreadyDone'
+     * CuriousObjects.makeCamelCase('this_is-someTHING') === 'thisIsSomething'
+     * CuriousObjects.makeCamelCase('_alreadyDone') === '_alreadyDone'
      *
      * @memberof module:curious.CuriousObjects
      *
@@ -960,71 +987,73 @@
      *
      * @return {string} The input, camel-cased.
      */
-    function camelCase(input) {
+    function makeCamelCase(input) {
       var components;
       var casedComponents;
       var separators;
-      var output;
+      var output = input;
 
-      // For leading/trailing separators
-      separators = {
-        leading: {
-          re: /^[-_]+/g,
-          match: null,
-          text: '',
-        },
-        trailing: {
-          re: /[-_]+$/g,
-          match: null,
-          text: '',
-        },
-      };
+      if (input) {
+        // For leading/trailing separators
+        separators = {
+          leading: {
+            re: /^[-_]+/g,
+            match: null,
+            text: '',
+          },
+          trailing: {
+            re: /[-_]+$/g,
+            match: null,
+            text: '',
+          },
+        };
 
-      // Match the leading/trailing separators and store the text
-      Object.keys(separators).forEach(function (key) {
-        var separatorType = separators[key];
-        separatorType.match = separatorType.re.exec(input);
-        if (separatorType.match) {
-          separatorType.text = separatorType.match[0];
-        }
-      });
+        // Match the leading/trailing separators and store the text
+        Object.keys(separators).forEach(function (key) {
+          var separatorType = separators[key];
+          separatorType.match = separatorType.re.exec(input);
+          if (separatorType.match) {
+            separatorType.text = separatorType.match[0];
+          }
+        });
 
-      if (separators.leading.text.length === input.length) {
-        // Special case: string consists entirely of separators: just return it
-        output = input;
-      } else {
-        // Only split the parts of the string that are not leading/trailing
-        // separators
-        components = input.substring(
-          separators.leading.text.length,
-          input.length - separators.trailing.text.length
-        ).split(/[_-]/);
-
-        // If we don't have anything to camel-case, just leave the body alone
-        if (components.length > 1) {
-          casedComponents = components.map(function (component, ix) {
-            // Normalize by lowercasing everything
-            var casedComponent = component.toLowerCase();
-
-            // Capitalize every word but the first
-            if (ix > 0) {
-              casedComponent = (
-                casedComponent.charAt(0).toUpperCase()
-                + casedComponent.slice(1)
-              );
-            }
-
-            return casedComponent;
-          });
+        if (separators.leading.text.length === input.length) {
+          // Special case: string consists entirely of separators: just return it
+          output = input;
         } else {
-          casedComponents = components;
-        }
+          // Only split the parts of the string that are not leading/trailing
+          // separators
+          components = input.substring(
+            separators.leading.text.length,
+            input.length - separators.trailing.text.length
+          ).split(/[_-]/);
 
-        output = (
-          separators.leading.text
-          + casedComponents.join('')
-          + separators.trailing.text
-        );
+          // If we don't have anything to camel-case, just leave the body alone
+          if (components.length > 1) {
+            casedComponents = components.map(function (component, ix) {
+              // Normalize by lowercasing everything
+              var casedComponent = component.toLowerCase();
+
+              // Capitalize every word but the first
+              if (ix > 0) {
+                casedComponent = (
+                  casedComponent.charAt(0).toUpperCase()
+                  + casedComponent.slice(1)
+                );
+              }
+
+              return casedComponent;
+            });
+          } else {
+            casedComponents = components;
+          }
+
+          output = (
+            separators.leading.text
+            + casedComponents.join('')
+            + separators.trailing.text
+          );
+        }
       }
 
       return output;
@@ -1036,7 +1065,7 @@
       groupObjectsByID: groupObjectsByID,
       idList: idList,
       idString: idString,
-      camelCase: camelCase,
+      makeCamelCase: makeCamelCase,
     };
   }());
 
@@ -1048,15 +1077,20 @@
    *
    * @param {string[]} relationships The relationship names
    * @param {Array<Array<Object>>} objects The objects from each relationship
+   * @param {boolean?} camelCase Whether or not to camel-case the relationship names
    *
    * @return {Object<string,Array>} The rearranged results
    */
-  function _convertResultsToOutput(relationships, objects) {
+  function _convertResultsToOutput(relationships, objects, camelCase) {
     var output = {};
 
     objects.forEach(function (object, objectIndex) {
       var relationship = relationships[objectIndex];
       var uniqueIndex = 2;
+
+      if (camelCase) {
+        relationship = CuriousObjects.makeCamelCase(relationship);
+      }
 
       // If there is already a key in the object with the existing relationship
       // name, add a number after it to make it unique.
@@ -1150,13 +1184,16 @@
    *   Default parameters to send to the serever with every query performed by
    *   this client; see {@link module:curious.CuriousClient#performQuery} for an
    *   explanation of what each parameter means.
-   * @param {boolean} quiet
+   * @param {boolean?} quiet
    *   Unless true, log every query to the console.
+   * @param {boolean?} camelCase
+   *   If true, construct camel-cased versions of the JSON objects returned
+   *   by the Curious server.
    *
    * @return {{performQuery: function}}
    *   A client object with a single performQuery method.
    */
-  var CuriousClient = function (curiousURL, request, clientDefaultArgs, quiet) {
+  var CuriousClient = function (curiousURL, request, clientDefaultArgs, quiet, camelCase) {
     return {
       /**
        * Perform a Curious query and return back parsed objects.
@@ -1221,11 +1258,15 @@
         return request(curiousURL, args)
           .then(function (response) {
             var parsedResult = CuriousObjects.parse(
-              relationships, constructors, response.result, groupedExistingObjects
+              relationships,
+              constructors,
+              response.result,
+              groupedExistingObjects,
+              camelCase
             );
 
             return {
-              objects: _convertResultsToOutput(relationships, parsedResult.objects),
+              objects: _convertResultsToOutput(relationships, parsedResult.objects, camelCase),
               trees: parsedResult.trees,
             };
           });

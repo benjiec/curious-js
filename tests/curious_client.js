@@ -31,7 +31,7 @@
     describe('#performQuery', function () {
       it('should work with axios', function (done) {
         var requestFunctions;
-        // Set the global axios variable to test defaults
+        // Set the global axios variable to test axios wrapper defaults
         if (typeof global !== 'undefined' && !global.axios) {
           global.axios = axios;
         }
@@ -43,29 +43,33 @@
         ];
 
         try {
-          requestFunctions.forEach(function (requestFunction) {
-            var client = new curious.CuriousClient(
-              CURIOUS_URL,
-              requestFunction,
-              null,
-              true
-            );
+          // Try with and without camelCase
+          [true, false].forEach(function (camelCase) {
+            requestFunctions.forEach(function (requestFunction) {
+              var client = new curious.CuriousClient(
+                CURIOUS_URL,
+                requestFunction,
+                null,
+                true,
+                camelCase
+              );
 
-            client.performQuery(
-              'query does not matter',
-              ['experiments', 'reactions']
-            )
-            .then(function (response) {
-              var expectedObjects = examples.expectedObjects();
-              expect(response).to.deep.equal({
-                trees: [null, null],
-                objects: {
-                  experiments: curious.CuriousObjects.values(expectedObjects.experiments),
-                  reactions: curious.CuriousObjects.values(expectedObjects.reactions),
-                },
+              client.performQuery(
+                'query does not matter',
+                ['experiments', 'reactions']
+              )
+              .then(function (response) {
+                var expectedObjects = examples.expectedObjects(camelCase);
+                expect(response).to.deep.equal({
+                  trees: [null, null],
+                  objects: {
+                    experiments: curious.CuriousObjects.values(expectedObjects.experiments),
+                    reactions: curious.CuriousObjects.values(expectedObjects.reactions),
+                  },
+                });
+              }, function (error) {
+                throw error;
               });
-            }, function (error) {
-              throw error;
             });
           });
 

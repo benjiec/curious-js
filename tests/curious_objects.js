@@ -122,7 +122,6 @@
 
         expect(objsByID).to.deep.equal(objsByIDWithNoID);
       });
-
     });
 
     describe('#idList', function () {
@@ -147,7 +146,6 @@
       });
 
       it('should maintain the order of IDs and keep the first unique one', function () {
-
         // This object with id = 2 will be ignored, but the first one will be kept.
         objs.push({name: 'b2', id: 2});
         objs.push({name: 'd', id: 4});
@@ -207,7 +205,7 @@
     });
 
     describe('#camelCase', function () {
-      var camelCase = curious.CuriousObjects.camelCase;
+      var camelCase = curious.CuriousObjects.makeCamelCase;
 
       it('should replace all _ with a camel-casing', function () {
         expect(camelCase('a_single')).to.equal('aSingle');
@@ -270,10 +268,15 @@
         expect(camelCase('$$')).to.equal('$$');
       });
 
-      it('should leave valid expressions alone:', function () {
+      it('should leave valid expressions alone', function () {
         expect(camelCase('word')).to.equal('word');
         expect(camelCase('aCamelCasedExpression')).to.equal('aCamelCasedExpression');
         expect(camelCase('_aPrefixedExpression')).to.equal('_aPrefixedExpression');
+      });
+
+      it('should leave null and undefined values unchanged', function () {
+        expect(camelCase(null)).to.equal(null);
+        expect(camelCase()).to.be.an('undefined');
       });
     });
 
@@ -291,6 +294,26 @@
           ['experiments', 'reactions'],
           null,
           queryJSONResponse
+        )).to.deep.equal(
+          {
+            trees: [null, null],
+            objects: [
+              expectedObjects.experiments,
+              expectedObjects.reactions,
+            ],
+          }
+        );
+      });
+
+      it('should correctly camel-case the output', function () {
+        var expectedObjects = examples.expectedObjects(true);
+
+        expect(curious.CuriousObjects.parse(
+          ['experiments', 'reactions'],
+          null,
+          queryJSONResponse,
+          null,
+          true
         )).to.deep.equal(
           {
             trees: [null, null],
