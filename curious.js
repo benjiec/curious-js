@@ -638,15 +638,17 @@
       newObject.__model = null;
 
       // Copy over the object data to be properties of the new CuriousObject
-      Object.keys(objectData).forEach(function (key) {
-        var newKey = key;
+      if (objectData instanceof Object && !(objectData instanceof Array)) {
+        Object.keys(objectData).forEach(function (key) {
+          var newKey = key;
 
-        if (camelCase) {
-          newKey = CuriousObjects.makeCamelCase(key);
-        }
+          if (camelCase) {
+            newKey = CuriousObjects.makeCamelCase(key);
+          }
 
-        newObject[newKey] = objectData[key];
-      });
+          newObject[newKey] = objectData[key];
+        });
+      }
 
       return newObject;
     }
