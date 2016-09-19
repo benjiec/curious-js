@@ -296,11 +296,11 @@
           queryJSONResponse
         )).to.deep.equal(
           {
-            trees: [null, null],
             objects: [
               expectedObjects.experiments,
               expectedObjects.reactions,
             ],
+            trees: [null, null],
           }
         );
       });
@@ -316,11 +316,11 @@
           true
         )).to.deep.equal(
           {
-            trees: [null, null],
             objects: [
               expectedObjects.experiments,
               expectedObjects.reactions,
             ],
+            trees: [null, null],
           }
         );
       });
@@ -387,6 +387,102 @@
         );
 
         expect(parsedData.objects[1][23063]).to.contain.keys(existingObjects[1][23063]);
+      });
+    });
+
+    describe('#defaultType', function () {
+      var CuriousObject = curious.CuriousObjects.defaultType;
+
+      describe('#toJSON', function () {
+        var exampleObjectsWithoutKeys;
+        var exampleObjectsWithKeys;
+
+        beforeEach(function () {
+          exampleObjectsWithoutKeys = [
+            true,
+            false,
+            3,
+            0,
+            'something',
+            '',
+            null,
+            {},
+            [],
+            [1],
+            [1, 2, {3: 'q'}],
+          ];
+
+          exampleObjectsWithKeys = [
+            { a: 1 },
+            { a: 1, b: 2, 34: 'sam', d: { n: 'nested' }, e: [5, 6]},
+          ];
+        });
+
+        it("should be equivalent to serializing the object's internal data keys", function () {
+          exampleObjectsWithKeys.forEach(function (obj) {
+            var curiousObj = new CuriousObject(obj);
+            var internalObj = obj;
+
+            ['__model', '__url'].forEach(function (field) {
+              internalObj[field] = curiousObj[field];
+            });
+
+            // Use JSON.parse and .to.deep.equal to allow for varying order of serialization
+            expect(curiousObj.toJSON()).to.deep.equal(obj);
+          });
+        });
+
+        it('should create empty objects for serializing objects with no internal data', function () {
+          exampleObjectsWithoutKeys.forEach(function (obj) {
+            var curiousObj = new CuriousObject(obj);
+            var internalObj = {
+              __model: null,
+              __url: null,
+            };
+
+            // Use JSON.parse and .to.deep.equal to allow for varying order of serialization
+            expect(JSON.parse(JSON.stringify(curiousObj.toJSON())))
+              .to.deep.equal(internalObj);
+          });
+        });
+
+        it('should register the class with JSON.stringify', function () {
+          exampleObjectsWithKeys.forEach(function (obj) {
+            var curiousObj = new CuriousObject(obj);
+            var internalObj = obj;
+
+            ['__model', '__url'].forEach(function (field) {
+              internalObj[field] = curiousObj[field];
+            });
+
+            // Use JSON.parse and .to.deep.equal to allow for varying order of serialization
+            expect(JSON.parse(JSON.stringify(curiousObj)))
+              .to.deep.equal(internalObj);
+          });
+        });
+      });
+
+      describe('#fromJSON', function () {
+        it('should create CuriousObject instances when required', function () {
+          expect(CuriousObject.fromJSON(JSON.stringify({
+            a: 1,
+            __model: null,
+            __url: null,
+          }))).to.deep.equal(new CuriousObject({ a: 1 }));
+        });
+
+        it('should not create CuriousObject instances unnecessarily', function () {
+          expect(CuriousObject.fromJSON(JSON.stringify({
+            a: 1,
+          }))).to.deep.equal({ a: 1 });
+        });
+
+        it('should be idempotent with JSON.stringify', function () {
+          var exampleObject = examples.expectedObjects().experiments[403];
+
+          exampleObject.reactions = []; // Prevent it from being circular to allow serialization
+          expect(CuriousObject.fromJSON(JSON.stringify(exampleObject))).to.deep.equal(exampleObject);
+        });
       });
     });
   });

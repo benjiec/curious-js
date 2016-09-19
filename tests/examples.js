@@ -140,9 +140,10 @@
   exports.expectedObjects = function (camelCase) {
     var exp;
     var rxns;
+    var CuriousObject = curious.CuriousObjects.defaultType;
 
     // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
-    exp = {
+    exp = new CuriousObject({
       id: 403,
       created_by_id: 22,
       created_on: '2015-01-16 14:54:13+00:00',
@@ -156,7 +157,7 @@
       temperature: null,
       __url: 'http://example.com/experiment/403/',
       __model: 'Experiment',
-    };
+    }, camelCase);
 
     rxns = [
       {
@@ -199,22 +200,7 @@
         __url: 'http://example.com/experiment/403/',
         __model: 'Reaction',
       },
-    ];
-
-    if (camelCase) {
-      [exp].concat(rxns).forEach(function (object) {
-        Object.keys(object).forEach(function (key) {
-          var newKey = curious.CuriousObjects.makeCamelCase(key);
-          var value;
-
-          if (newKey !== key) {
-            value = object[key];
-            delete object[key];
-            object[newKey] = value;
-          }
-        });
-      });
-    }
+    ].map(function (objectData) { return new CuriousObject(objectData, camelCase); });
 
     // Link foregin keys
     exp.reactions = rxns;

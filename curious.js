@@ -652,6 +652,51 @@
     }
 
     /**
+     * Serialize CuriousObject instances to JSON effectively if they are passed to JSON.stringify
+     *
+     * @memberof module:curious.CuriousObjects.defaultType
+     *
+     * @return {Object} A plain JavaScript object containing the CuriousObject's data
+     */
+    CuriousObject.prototype.toJSON = function () {
+      var curiousObject = this;
+      var serializableObject = {};
+
+      // Copy over the object data to be properties of the new CuriousObject
+      Object.keys(curiousObject).forEach(function (key) {
+        serializableObject[key] = curiousObject[key];
+      });
+
+      return serializableObject;
+    };
+
+    /**
+     * When parsing a JSON string into objects, instantiate any objects that look like
+     * CuriousObject instances as such, instead of plain JavaScript objects.
+     *
+     * @memberof module:curious.CuriousObjects.defaultType
+     * @static
+     *
+     * @param {string} jsonString A string of JSON-encoded data
+     *
+     * @return {*} The instantiated JSON-encoded data, with CuriousObjects placed where
+     *             appropriate
+     */
+    CuriousObject.fromJSON = function (jsonString) {
+      return JSON.parse(jsonString, function (key, value) {
+        var parsedValue = value;
+
+        // If a plain object has '__url' and '__model' fields, it's probably a CuriousObject
+        if (value && value.hasOwnProperty('__url') && value.hasOwnProperty('__model')) {
+          parsedValue = new CuriousObject(value);
+        }
+
+        return parsedValue;
+      });
+    };
+
+
+    /**
      * When a Curious query is performed, the returned data comes in a set of 3
      * arrays to save space: objects, fields, urls. Assemble that data into a
      * single array of objects, each of which has the appropriate fields. This
@@ -1066,6 +1111,7 @@
       idList: idList,
       idString: idString,
       makeCamelCase: makeCamelCase,
+      defaultType: CuriousObject,
     };
   }());
 
