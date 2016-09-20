@@ -14,7 +14,10 @@
   ],
   "version": "2.2.1",
   "license": "MIT",
-  "ignore": [],
+  "ignore": [
+    "bower.json",
+    "**/.*"
+  ],
   "main": [
     "./curious.js"
   ],

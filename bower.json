@@ -14,7 +14,13 @@
   ],
   "version": "2.2.1",
   "license": "MIT",
-  "ignore": [],
+  "ignore": [
+    "doc",
+    "scripts",
+    "tests",
+    "package.json",
+    "**/.*"
+  ],
   "main": [
     "./curious.js"
   ],
