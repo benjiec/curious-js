@@ -19,7 +19,11 @@
     "./curious.js"
   ],
   "scripts": {
-    "test": "./run_tests"
+    "make_doc": "./scripts/make_doc",
+    "prepublish": "./scripts/make_doc",
+    "release_doc": "./scripts/release_doc",
+    "repl": "./scripts/repl",
+    "test": "./scripts/run_tests"
   },
   "dependencies": {
   },
