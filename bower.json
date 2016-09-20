@@ -1,6 +1,13 @@
 {
   "name": "curious-js",
-  "repository": "https://github.com/benjiec/curious-js",
+  "repository": "https://github.com/ginkgobioworks/curious-js",
+  "description": "JavaScript consumer code for Curious APIs.",
+  "keywords": [
+    "curious",
+    "graph-db",
+    "query",
+    "client"
+  ],
   "authors": [
     {
       "name": "Benjie Chen",
@@ -12,6 +19,7 @@
       "homepage": "http://myw.github.io"
     }
   ],
+  "homepage": "http://ginkgobioworks.github.io/curious-js",
   "version": "2.2.2",
   "license": "MIT",
   "ignore": [
@@ -21,9 +29,7 @@
     "package.json",
     "**/.*"
   ],
-  "main": [
-    "./curious.js"
-  ],
+  "main": "./curious.js",
   "dependencies": {
   },
   "devDependencies": {
