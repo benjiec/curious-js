@@ -1,4 +1,4 @@
-#!/bin/bash -v
+#!/bin/bash -e -x
 
 cd `dirname $0`;
 
@@ -19,7 +19,7 @@ tar xvf $archivepath
 
 git add .
 git commit -m "Update documentation to $current_head"
-git push
+git push origin gh-pages
 
 rm -vf $archivepath
 
