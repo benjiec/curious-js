@@ -195,11 +195,11 @@
    * @class
    * @alias module:curious.CuriousQuery
    *
-   * @param {string} [initialTermString]
+   * @param {string=} initialTermString
    *   The string for the starting term
-   * @param {string} [initialRelationship]
+   * @param {string=} initialRelationship
    *   The starting term's relationship
-   * @param {function} [initialObjectClass]
+   * @param {function(Object)=} initialObjectClass
    *   A custom object class constructor for the starting term
    *
    * @return {CuriousQuery} The newly constructed object
@@ -575,9 +575,7 @@
   };
 
   /**
-   * Perform the query using a passed-in Curious client, such as jQuery's ajax,
-   * or any other client that has an asynchronous <code>POST</code> request
-   * methods.
+   * Perform the query using a passed-in CuriousClient object.
    *
    * @param {!CuriousClient} curiousClient
    *   A CuriousClient object that will handle performing the actual query
