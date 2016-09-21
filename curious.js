@@ -280,6 +280,13 @@
   };
 
   /**
+   * Generate the constructed query string represented by this object.
+   *
+   * @return {string} The fully constructed query
+   */
+  CuriousQuery.prototype.toString = CuriousQuery.prototype.query;
+
+  /**
    * Extend this query object with another query object: return a new query
    * chain with the current query chain's terms followed
    * by the other query chain's terms.
