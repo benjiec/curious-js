@@ -280,11 +280,47 @@
   };
 
   /**
-   * Generate the constructed query string represented by this object.
+   * Convert this object to a string, returning the complete query string
    *
    * @return {string} The fully constructed query
    */
   CuriousQuery.prototype.toString = CuriousQuery.prototype.query;
+
+  /**
+   * Convert this probject to its native value equivalent, returning the complete query string
+   *
+   * @return {string} The fully constructed query
+   */
+  CuriousQuery.prototype.valueOf = CuriousQuery.prototype.query;
+
+  /**
+   * Convert this probject to a plain JavaScript object to allow it to be serialized.
+   *
+   * @return {string} The fully constructed query
+   */
+  CuriousQuery.prototype.toJSON = function () {
+    return {
+      terms: this.terms,
+      relationships: this.relationships,
+      params: this.params,
+
+      // Object Factories can't be serialized directly: they're functions.
+      objectFactories: this.objectFactories.map(function (factory) {
+        return factory ? factory.toString() : null;
+      }),
+
+      // Existing objects are turned into plain objects if possible, or left alone otherwise.
+      existingObjects: this.existingObjects.map(function (objectArray) {
+        return objectArray.map(function (existingObject) {
+          return (
+            existingObject.toJSON
+              ? existingObject.toJSON()
+              : existingObject
+          );
+        });
+      }),
+    };
+  };
 
   /**
    * Extend this query object with another query object: return a new query
