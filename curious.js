@@ -205,23 +205,23 @@
    * @return {CuriousQuery} The newly constructed object
    *
    * @example
-   *   // Explicitly set start, wrapWith classes
-   *   var q = (new curious.CuriousQuery())
-   *     .start('Experiment(id=302)', 'experiment')
-   *     .follow('Experiment.reaction_set', 'reactions')
-   *     .follow('Reaction.dataset_set', 'dataset').wrapWith(Dataset)
-   *     .follow('Dataset.attachment_set');
+   * // Explicitly set start, wrapWith classes
+   * var q = (new curious.CuriousQuery())
+   *   .start('Experiment(id=302)', 'experiment')
+   *   .follow('Experiment.reaction_set', 'reactions')
+   *   .follow('Reaction.dataset_set', 'dataset').wrapWith(Dataset)
+   *   .follow('Dataset.attachment_set');
    *
-   *  q.query() ==
-   *    'Experiment(id=302), Experiment.reaction_set, '
-   *    + 'Reaction.dataset_set, Dataset.attachment_set'
+   * q.query() ==
+   *   'Experiment(id=302), Experiment.reaction_set, '
+   *   + 'Reaction.dataset_set, Dataset.attachment_set'
    *
    * @example
-   *   // Terser version of the same query above
-   *   var q = new curious.CuriousQuery('Experiment(id=302)', 'experiment')
-   *     .follow('Experiment.reaction_set', 'reactions')
-   *     .follow('Reaction.dataset_set', 'dataset', Dataset)
-   *     .follow('Dataset.attachment_set');
+   * // Terser version of the same query above
+   * var q = new curious.CuriousQuery('Experiment(id=302)', 'experiment')
+   *   .follow('Experiment.reaction_set', 'reactions')
+   *   .follow('Reaction.dataset_set', 'dataset', Dataset)
+   *   .follow('Dataset.attachment_set');
    */
   var CuriousQuery = function (
     initialTermString, initialRelationship, initialObjectClass
@@ -733,7 +733,6 @@
         return parsedValue;
       });
     };
-
 
     /**
      * When a Curious query is performed, the returned data comes in a set of 3
@@ -1283,6 +1282,60 @@
       /**
        * Perform a Curious query and return back parsed objects.
        *
+       * @example
+       * // Here's a many-to-many example
+       * client.performQuery(
+       *   'Document(id__in=[1,2]) ?(Document.entities)',
+       *   ['documents', 'entities'],
+       * ).then(function (results) {
+       *
+       *   console.log(results.objects.documents);
+       *   // Will show an array of documents, as CuriousObject instances:
+       *   // [
+       *   //   CuriousObject({
+       *   //      __model: 'Document',
+       *   //      __url: 'http://somewhere/document/1',
+       *   //      id: 1,
+       *   //      entities: [
+       *   //        // entities associated with document 1
+       *   //      ]
+       *   //      ... other fields of Document objects ...
+       *   //   }),
+       *   //  CuriousObject({
+       *   //      __model: 'Document',
+       *   //      __url: 'http://somewhere/document/2',
+       *   //      id: 2,
+       *   //      entities: [
+       *   //        // entities associated with document 2
+       *   //      ]
+       *   //      ...
+       *   //   }),
+       *   // ]
+       *
+       *   console.log(results.objects.entities);
+       *   // Will show an array of entities, as CuriousObject instances:
+       *   // [
+       *   //   CuriousObject({
+       *   //      __model: 'Entity',
+       *   //      __url: 'http://somewhere/entity/1',
+       *   //      id: 2348,
+       *   //      documents: [
+       *   //        // documents associated with entity 1
+       *   //      ]
+       *   //      ... other fields of Entity objects ...
+       *   //   }),
+       *   //  CuriousObject({
+       *   //      __model: 'Entity',
+       *   //      __url: 'http://somewhere/entity/2',
+       *   //      id: 2725,
+       *   //      documents: [
+       *   //        // documents associated with entity 2
+       *   //      ]
+       *   //      ...
+       *   //   }),
+       *   // ]
+       * });
+       *
        * @memberof module:curious.CuriousClient
        *
        * @param {string} q
@@ -1319,9 +1372,9 @@
        *   this query
        *
        * @return {Promise<{objects: Array, trees: Array}>}
-       *   A promise that resolves to an object containing the parsed objects
-       *   from the query and a tree structure that relates IDs for recursive
-       *   queries
+       *   A promise that resolves to an object containing the objects requested by the query
+       *   and a tree structure that relates IDs for recursive queries
+       *
        */
       performQuery: function (q, relationships, constructors, params, existingObjects) {
         var args;
