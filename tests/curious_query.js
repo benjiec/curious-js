@@ -1,4 +1,4 @@
-/* global describe it before beforeEach */
+/* global describe it before beforeEach after */
 
 // mocha.js tests for the functions dealing with Curious queries
 (function () {
@@ -6,6 +6,8 @@
 
   var expect = require('chai').expect;
   var curious = require('../curious.js');
+  var axios = require('axios');
+  var server = require('./server.js');
 
   describe('CuriousQuery', function () {
     describe('#query', function () {
@@ -514,6 +516,89 @@
       it('should return whatever CuriousClient#performQuery does', function () {
         var q = new curious.CuriousQuery();
         expect(q.perform(curiousClient)).to.equal(curiousClient.performQuery());
+      });
+    });
+
+    describe('#then', function () {
+      var validClient;
+      var invalidClient;
+      var srv;
+
+      before(function (done) {
+        validClient = new curious.CuriousClient(
+          server.url,
+          curious.CuriousClient.wrappers.axios(axios),
+          null,
+          true,
+          true
+        );
+
+        invalidClient = new curious.CuriousClient(
+          'INVALID URL',
+          curious.CuriousClient.wrappers.axios(axios),
+          null,
+          true,
+          true
+        );
+
+        srv = server.start(done);
+        return srv;
+      });
+
+      after(function (done) {
+        srv.close(done);
+      });
+
+      it('should attach callbacks on fulfilled promises', function (done) {
+        try {
+          var q = new curious.CuriousQuery().then(function (response) {
+            expect(response).to.be.ok;
+            done();
+          }, done);
+          q.perform(validClient);
+        } catch (error) {
+          done(error);
+        }
+      });
+
+      it('should attach callbacks on rejected promises', function (done) {
+        try {
+          var q = new curious.CuriousQuery().then(function () {
+            throw new Error('Incorrectly called fulfilled handler');
+          }, function (error) {
+            expect(error).to.be.ok;
+            done();
+          });
+          q.perform(invalidClient);
+        } catch (error) {
+          done(error);
+        }
+      });
+    });
+
+    describe('#catch', function () {
+      var invalidClient;
+
+      before(function () {
+        invalidClient = new curious.CuriousClient(
+          'INVALID URL',
+          curious.CuriousClient.wrappers.axios(axios),
+          null,
+          true,
+          true
+        );
+      });
+
+      it('should attach callbacks on rejected promises', function (done) {
+        try {
+          var q = new curious.CuriousQuery().catch(function (error) {
+            expect(error).to.be.ok;
+            done();
+          });
+          q.perform(invalidClient);
+        } catch (error) {
+          done(error);
+        }
       });
     });
   });

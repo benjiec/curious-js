@@ -1,31 +1,26 @@
-/* global describe it before */
+/* global describe it before after */
 
 // mocha.js tests for functions dealing with Curious objects
 (function () {
   'use strict';
 
-  var http = require('http');
   var axios = require('axios');
   var expect = require('chai').expect;
   var curious = require('../curious.js');
   var examples = require('./examples.js');
+  var server = require('./server.js');
 
   // TESTS
-  var PORT = 8080;
-  var CURIOUS_URL = 'http://localhost:' + PORT;
 
   describe('CuriousClient', function () {
-    before(function () {
-      return (
-        http
-          .createServer(function (request, response) {
-            response.writeHead(200, {
-              'Content-Type': 'application/json',
-            });
-            response.end(JSON.stringify(examples.response()));
-          })
-          .listen(PORT)
-      );
+    var srv;
+
+    before(function (done) {
+      srv = server.start(done);
+    });
+
+    after(function (done) {
+      srv.close(done);
     });
 
     describe('#performQuery', function () {
@@ -47,7 +42,7 @@
           [true, false].forEach(function (camelCase) {
             requestFunctions.forEach(function (requestFunction) {
               var client = new curious.CuriousClient(
-                CURIOUS_URL,
+                server.url,
                 requestFunction,
                 null,
                 true,

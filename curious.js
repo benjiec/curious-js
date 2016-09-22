@@ -232,6 +232,9 @@
     this.params = null;
     this.existingObjects = null;  // array of object arrays
 
+    // then-style callback pairs to attach to the end of the promise when the query is performed
+    this.thens = [];
+
     if (initialTermString && initialRelationship) {
       this.start(initialTermString, initialRelationship, initialObjectClass);
     }
@@ -621,11 +624,71 @@
    *
    */
   CuriousQuery.prototype.perform = function (curiousClient) {
+    var promise;
     var q = this.query();
 
-    return curiousClient.performQuery(
+    promise = curiousClient.performQuery(
       q, this.relationships, this.objectFactories, this.params, this.existingObjects
     );
+
+    // Attach any thenable resolve/reject promise callback pairs to the promise that
+    // results from query execution
+    this.thens.forEach(function (thenPair) {
+      // thenPair looks like [resolved, rejected]
+      if (thenPair[0]) {
+        // Just like promise = promise.then(resolved, rejected);
+        promise = promise.then.apply(promise, thenPair);
+      } else if (thenPair.length > 1 && thenPair[1]) {
+        // If the first callback is null but the second one isn't, we're looking at a catch
+        // situation. We use the same data structure to store both situations, so that they're
+        // attached to the proise in the same order they were attached to the Query object
+        promise = promise.catch(thenPair[1]);
+      }
+    });
+
+    return promise;
+  };
+
+  /**
+   * Add a (pair of) callback(s) to be called when the promise to perform the query resolves.
+   *
+   * This can be useful for constructing a query object with known post-processing before
+   * actually executing it.
+   *
+   * @param {function} fulfilled
+   *   A function to call when the promise is fulfilled (just like you would pass to
+   *   Promise.prototype.then)
+   *
+   * @param {function=} rejected
+   *   A function to call when the promise is rejected (just like you would pass as the
+   *   second argument to Promise.prototype.then)
+   *
+   * @return {CuriousQuery}
+   *   The query itself, to allow chaining <code>then</code>s, or any other methods
+   */
+  CuriousQuery.prototype.then = function (fulfilled, rejected) {
+    this.thens.push([fulfilled, rejected]);
+
+    return this;
+  };
+
+  /**
+   * Add a callback to be called if the promise to perform the query is rejected.
+   *
+   * This can be useful for constructing a query object with known error-handling before
+   * actually executing it.
+   *
+   * @param {function} rejected
+   *   A function to call when the promise is rejected (just like you would pass to
+   *   Promise.prototype.catch)
+   *
+   * @return {CuriousQuery}
+   *   The query itself, to allow chaining <code>then</code>s <code>catch</code>es, or any other methods
+   */
+  CuriousQuery.prototype.catch = function (rejected) {
+    this.thens.push([null, rejected]);
+
+    return this;
   };
 
   /**
