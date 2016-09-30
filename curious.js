@@ -1,22 +1,31 @@
+/* global define */
 /**
  * Module for curious client-side query construction and JSON parsing
  *
  * @module curious
  */
-(function () {
+(function (global, factory) {
+  // UMD Format for exports. Works with all module systems: AMD/RequireJS, CommonJS, and global
+  var mod;
+
+  // AMD
+  if (typeof define === 'function' && define.amd) {
+    define(['exports'], factory);
+  } else if (typeof exports !== 'undefined') {
+    factory(exports);
+  } else {
+    mod = {
+      exports: {},
+    };
+
+    factory(mod.exports);
+    global.curious = mod.exports;
+  }
+})(this, function _curiousUmdFactory(exports) {
   'use strict';
 
-  var ex; // Alias for exporting to window or CommonJS exports
-
-  // Export either to browser window or CommonJS module
-  if (typeof window !== 'undefined' && window) {
-    ex = window;
-  } else if (typeof exports !== 'undefined' && exports) {
-    ex = exports;
-  } else if (typeof self !== 'undefined' && self) {
-    ex = self;
-  }
-
+  // For node.js and CommonJS
+  Object.defineProperty(exports, '__esModule', { value: true });
 
   // QUERY TERMS
 
@@ -30,17 +39,20 @@
    *
    * @param {string} term The internal term text to use
    */
-  var QueryTerm = function (term) {
+  function QueryTerm(term) {
     /**
      * The term contents
-      * @readonly
-      * @public
-      * @return {string} The term contents
-      */
-    this.term = function () { return term; };
+     *
+     * @method term
+     * @readonly
+     * @public
+     *
+     * @return {string} The term contents
+     */
+    this.term = function _term() { return term; };
 
     return this;
-  };
+  }
 
   /**
    * Return the term contents as they belong in a query, wrapped with parens and
@@ -50,7 +62,7 @@
    *
    * @return {string} The term contents, formatted
    */
-  QueryTerm.prototype.toString = function () { return this.term(); };
+  QueryTerm.prototype.toString = function toString() { return this.term(); };
 
   /**
    * Determine whether or not the terms sticks implicit joins into adjacent
@@ -62,7 +74,7 @@
    *   True if the term implicitly joins with its following term. True by
    *   default
    */
-  QueryTerm.prototype.leftJoin = function () { return false; };
+  QueryTerm.prototype.leftJoin = function leftJoin() { return false; };
 
   /**
   * Determine whether or not the term is a conditional and does not affect
@@ -73,7 +85,7 @@
   * @return {boolean}
   *   True if term is a conditional
   */
-  QueryTerm.prototype.conditional = function () { return false; };
+  QueryTerm.prototype.conditional = function conditional() { return false; };
 
   /**
    * Make a term that follows the query chain
@@ -85,11 +97,11 @@
    *
    * @param {string} term The term contents
    */
-  var QueryTermFollow = function (term) {
+  function QueryTermFollow(term) {
     QueryTerm.call(this, term);
 
     return this;
-  };
+  }
   QueryTermFollow.prototype = new QueryTerm();
 
   /**
@@ -102,18 +114,16 @@
    *
    * @param {string} term The term contents
    */
-  var QueryTermHaving = function (term) {
+  function QueryTermHaving(term) {
     QueryTerm.call(this, term);
 
     return this;
-  };
+  }
   QueryTermHaving.prototype = new QueryTerm();
 
-  QueryTermHaving.prototype.conditional = function () { return true; };
+  QueryTermHaving.prototype.conditional = function conditional() { return true; };
 
-  QueryTermHaving.prototype.toString = function () {
-    return '+(' + this.term() + ')';
-  };
+  QueryTermHaving.prototype.toString = function toString() { return '+(' + this.term() + ')'; };
 
   /**
    * Make a term that performs a negative (exclusive) filter.
@@ -125,18 +135,16 @@
    *
    * @param {string} term The term contents
    */
-  var QueryTermNotHaving = function (term) {
+  function QueryTermNotHaving(term) {
     QueryTerm.call(this, term);
 
     return this;
-  };
+  }
   QueryTermNotHaving.prototype = new QueryTerm();
 
-  QueryTermNotHaving.prototype.conditional = function () { return true; };
+  QueryTermNotHaving.prototype.conditional = function conditional() { return true; };
 
-  QueryTermNotHaving.prototype.toString = function () {
-    return '-(' + this.term() + ')';
-  };
+  QueryTermNotHaving.prototype.toString = function toString() { return '-(' + this.term() + ')'; };
 
   /**
    * Make a term that performs an outer join.
@@ -148,18 +156,16 @@
    *
    * @param {string} term The term contents
    */
-  var QueryTermWith = function (term) {
+  function QueryTermWith(term) {
     QueryTerm.call(this, term);
 
     return this;
-  };
+  }
   QueryTermWith.prototype = new QueryTerm();
 
-  QueryTermWith.prototype.leftJoin = function () { return true; };
+  QueryTermWith.prototype.leftJoin = function leftJoin() { return true; };
 
-  QueryTermWith.prototype.toString = function () {
-    return '?(' + this.term() + ')';
-  };
+  QueryTermWith.prototype.toString = function toString() { return '?(' + this.term() + ')'; };
 
 
   // QUERY OBJECT
@@ -223,7 +229,7 @@
    *   .follow('Reaction.dataset_set', 'dataset', Dataset)
    *   .follow('Dataset.attachment_set');
    */
-  var CuriousQuery = function (
+  function CuriousQuery(
     initialTermString, initialRelationship, initialObjectClass
   ) {
     this.terms = [];
@@ -240,15 +246,15 @@
     }
 
     return this;
-  };
+  }
 
   /**
    * Generate the constructed query string represented by this object.
    *
    * @return {string} The fully constructed query
    */
-  CuriousQuery.prototype.query = function () {
-    var query = '';
+  CuriousQuery.prototype.query = function query() {
+    var queryString = '';
     var terms = [];
 
     // Flatten all terms and arrays of terms into a single array
@@ -264,22 +270,22 @@
       // those terms are returned
       if (termIndex > 0) {
         if (term.conditional()) {
-          query += ' ';
+          queryString += ' ';
         } else if (
           !term.conditional()
           && !terms[termIndex - 1].leftJoin()
           && !term.leftJoin()
         ) {
-          query += ', ';
+          queryString += ', ';
         } else {
-          query += ' ';
+          queryString += ' ';
         }
       }
 
-      query += term;
+      queryString += term;
     });
 
-    return query;
+    return queryString;
   };
 
   /**
@@ -287,21 +293,21 @@
    *
    * @return {string} The fully constructed query
    */
-  CuriousQuery.prototype.toString = CuriousQuery.prototype.query;
+  CuriousQuery.prototype.toString = function toString() { return this.query(); };
 
   /**
    * Convert this probject to its native value equivalent, returning the complete query string
    *
    * @return {string} The fully constructed query
    */
-  CuriousQuery.prototype.valueOf = CuriousQuery.prototype.query;
+  CuriousQuery.prototype.valueOf = function valueOf() { return this.query(); };
 
   /**
    * Convert this probject to a plain JavaScript object to allow it to be serialized.
    *
    * @return {string} The fully constructed query
    */
-  CuriousQuery.prototype.toJSON = function () {
+  CuriousQuery.prototype.toJSON = function toJSON() {
     return {
       terms: this.terms,
       relationships: this.relationships,
@@ -333,7 +339,7 @@
    * @param {CuriousQuery} extensionQueryObject The query object being added
    * @return {CuriousQuery} The combined query
    */
-  CuriousQuery.prototype.extend = function (extensionQueryObject) {
+  CuriousQuery.prototype.extend = function extend(extensionQueryObject) {
     var queryObject = this;
 
     extensionQueryObject.terms.forEach(function (term, termIndex) {
@@ -354,7 +360,7 @@
    *   A new CuriousQuery object constaining the same terms, relationships,
    *   constructors
    */
-  CuriousQuery.prototype.clone = function () {
+  CuriousQuery.prototype.clone = function clone() {
     var clonedObject;
 
     clonedObject = new CuriousQuery();
@@ -375,10 +381,10 @@
    *
    * @private
    *
-   * @param {QueryTerm|Array<QuerryTerm>} termObject
+   * @param {!QueryTerm|Array<QuerryTerm>} termObject
    *   A {@link module:curious~QueryTerm} object to append to the term, or an
    *   array of them
-   * @param {string} relationship
+   * @param {!string} relationship
    *   The name of this term in inter-term relationships
    * @param {?function(Object)=} customConstructor
    *   A custom constructor for the resulting objects, if this part of the
@@ -386,7 +392,7 @@
    *
    * @return {CuriousQuery} The query object, with the new term added
    */
-  CuriousQuery.prototype._addTerm = function (
+  CuriousQuery.prototype._addTerm = function _addTerm(
     termObject, relationship, customConstructor
   ) {
     // Ensure that objectFactories, relationships, and terms always have the
@@ -420,7 +426,7 @@
    *
    * @private
    *
-   * @param {QueryTerm|Array<QueryTerm>} termObject
+   * @param {!QueryTerm|Array<!QueryTerm>} termObject
    *   A {@link module:curious~QueryTerm} object (or an array of them), to
    *   append to the previous term
    *
@@ -428,7 +434,7 @@
    *   The query object, with the term object's string representation appended
    *   to the previous term
    */
-  CuriousQuery.prototype._appendToPreviousTerm = function (termObject) {
+  CuriousQuery.prototype._appendToPreviousTerm = function _appendToPreviousTerm(termObject) {
     var lastTerm;
 
     if (this.terms.length) {
@@ -456,9 +462,9 @@
    * Add a starting term to this query. Equivalent to passing parameters
    * directly to the constructor.
    *
-   * @param {string} termString
+   * @param {!string} termString
    *   The contents of the starting term
-   * @param {string} relationship
+   * @param {!string} relationship
    *   The name of this term in inter-term relationships
    * @param {?function(Object)=} customConstructor
    *   A custom constructor for the resulting objects, if this part of the
@@ -466,78 +472,80 @@
    *
    * @return {CuriousQuery} The query object, with the term appended
    */
-  CuriousQuery.prototype.start = function (termString, relationship, customConstructor) {
+  CuriousQuery.prototype.start = function start(termString, relationship, customConstructor) {
     return this._addTerm(new QueryTermFollow(termString), relationship, customConstructor);
   };
 
   /**
    * Add an inner-join term to this query.
    *
-   * @param {string} termString
+   * @param {!string} termString
    *   The contents of the starting term
-   * @param {string} relationship
+   * @param {!string} relationship
    *   The name of this term in inter-term relationships
    * @param {?function(Object)=} customConstructor
    *   A custom constructor function for the resulting objects
    *
    * @return {CuriousQuery} The query object, with the term appended
    */
-  CuriousQuery.prototype.follow = function (termString, relationship, customConstructor) {
+  CuriousQuery.prototype.follow = function follow(termString, relationship, customConstructor) {
     return this._addTerm(new QueryTermFollow(termString), relationship, customConstructor);
   };
 
   /**
    * Add a filter term to this query.
    *
-   * @param {string} termString
+   * @param {!string} termString
    *   The subquery to filter by
    *
    * @return {CuriousQuery} The query object, with the term appended
    */
-  CuriousQuery.prototype.having = function (termString) {
+  CuriousQuery.prototype.having = function having(termString) {
     return this._appendToPreviousTerm(new QueryTermHaving(termString));
   };
 
   /**
    * Add an exclude filter term to this query.
    *
-   * @param {string} termString
+   * @param {!string} termString
    *   The subquery to filter by
    *
    * @return {CuriousQuery} The query object, with the term appended
    */
-  CuriousQuery.prototype.notHaving = function (termString) {
+  CuriousQuery.prototype.notHaving = function notHaving(termString) {
     return this._appendToPreviousTerm(new QueryTermNotHaving(termString));
   };
 
   /**
    * Add an outer-join term to this query.
    *
-   * @param {string} termString
+   * @method with
+   *
+   * @param {!string} termString
    *   The contents of the starting term
-   * @param {string} relationship
+   * @param {!string} relationship
    *   The name of this term in inter-term relationships
-   * @param {function} [customConstructor]
+   * @param {?function(Object)=} customConstructor
    *   A custom constructor for the resulting objects, if this part of the
    *   query returns new objects
    *
    * @return {CuriousQuery} The query object, with the term appended
    */
-  CuriousQuery.prototype.with = function (termString, relationship, customConstructor) {
+  CuriousQuery.prototype.with = function _with(termString, relationship, customConstructor) {
     return this._addTerm(new QueryTermWith(termString), relationship, customConstructor);
   };
 
   /**
    * Specify the object constructor to use for the preceding term in the query.
    *
-   * @param {function} customConstructor
+   * @param {?function(Object)=} customConstructor
    *   A constructor to use when instantiating objects from the previous part of
    *   the query
    *
    * @return {CuriousQuery}
    *   The query object, with the new constructor data stored internally
    */
-  CuriousQuery.prototype.wrapWith = function (customConstructor) {
+  CuriousQuery.prototype.wrapWith = function wrapWith(customConstructor) {
     return this.wrapDynamically(_makeObjectFactory(customConstructor));
   };
 
@@ -547,13 +555,13 @@
    * constructors that do not return a value by default, this will only work
    * with factory functions that explicitly return an object.
    *
-   * @param {function (Object): Object} factoryFunction
+   * @param {function(Object)} factoryFunction
    *   A factory function that returns an object of the desired wrapping class
    *
    * @return {CuriousQuery}
    *   The query object, with the new constructor data stored internally
    */
-  CuriousQuery.prototype.wrapDynamically = function (factoryFunction) {
+  CuriousQuery.prototype.wrapDynamically = function wrapDynamically(factoryFunction) {
     if (this.objectFactories.length) {
       this.objectFactories[this.objectFactories.length - 1] = factoryFunction;
     } else {
@@ -575,7 +583,7 @@
    * @return {CuriousQuery}
    *   The query object with its curious client parameters updated
    */
-  CuriousQuery.prototype.setParams = function (params) {
+  CuriousQuery.prototype.setParams = function setParams(params) {
     var queryObject = this;
 
     if (params instanceof Object) {
@@ -594,12 +602,12 @@
    * Set the existing objects that this query will use to link the returned
    * objects into.
    *
-   * @param {Array<Object>} objs The existing objects to set
+   * @param {!Array<!Object>} objs The existing objects to set
    *
    * @return {CuriousQuery} The query object with its existing object set
    *                        updated
    */
-  CuriousQuery.prototype.setExistingObjects = function (objs) {
+  CuriousQuery.prototype.setExistingObjects = function setExistingObjects(objs) {
     var queryObject = this;
 
     if (objs && objs.forEach) {
@@ -623,7 +631,7 @@
    *   A promise, as returned by {@link module:curious.CuriousClient#performQuery}
    *
    */
-  CuriousQuery.prototype.perform = function (curiousClient) {
+  CuriousQuery.prototype.perform = function perform(curiousClient) {
     var promise;
     var q = this.query();
 
@@ -666,7 +674,7 @@
    * @return {CuriousQuery}
    *   The query itself, to allow chaining <code>then</code>s, or any other methods
    */
-  CuriousQuery.prototype.then = function (fulfilled, rejected) {
+  CuriousQuery.prototype.then = function then(fulfilled, rejected) {
     this.thens.push([fulfilled, rejected]);
 
     return this;
@@ -678,6 +686,8 @@
    * This can be useful for constructing a query object with known error-handling before
    * actually executing it.
    *
+   * @method catch
+   *
    * @param {function} rejected
    *   A function to call when the promise is rejected (just like you would pass to
    *   Promise.prototype.catch)
@@ -685,7 +695,7 @@
    * @return {CuriousQuery}
    *   The query itself, to allow chaining <code>then</code>s <code>catch</code>es, or any other methods
    */
-  CuriousQuery.prototype.catch = function (rejected) {
+  CuriousQuery.prototype.catch = function _catch(rejected) {
     this.thens.push([null, rejected]);
 
     return this;
@@ -707,7 +717,7 @@
    */
   function _makeObjectFactory(customConstructor) {
     var CustomConstructorClass = customConstructor;
-    return function () {
+    return function CustomConstructorClassFactory() {
       return new CustomConstructorClass();
     };
   }
@@ -720,7 +730,7 @@
    * @namespace
    * @alias module:curious.CuriousObjects
    */
-  var CuriousObjects = (function () {
+  var CuriousObjects = (function _curiousObjectsModule() {
     /**
      * Base (default) class for an object returned from a Curious query
      *
@@ -762,7 +772,7 @@
      *
      * @return {Object} A plain JavaScript object containing the CuriousObject's data
      */
-    CuriousObject.prototype.toJSON = function () {
+    CuriousObject.prototype.toJSON = function toJSON() {
       var curiousObject = this;
       var serializableObject = {};
 
@@ -784,7 +794,7 @@
      * @return {*} The instantiated JSON-encoded data, with CuriousObjects placed where
      *             appropriate
      */
-    CuriousObject.fromJSON = function (jsonString) {
+    CuriousObject.fromJSON = function fromJSON(jsonString) {
       return JSON.parse(jsonString, function (key, value) {
         var parsedValue = value;
 
@@ -1256,8 +1266,8 @@
    * Get the final args to send to the Curious server, after filtering down
    * through all of the defaults.
    *
-   * @param {?Object} queryArgs Query-specific args
-   * @param {?Object} clientDefaultArgs Client-specific args
+   * @param {?Object=} queryArgs Query-specific args
+   * @param {?Object=} clientDefaultArgs Client-specific args
    *
    * @return {Object} The args, with all defaults filled in hierarchially
    */
@@ -1337,10 +1347,10 @@
    *   If true, construct camel-cased versions of the JSON objects returned
    *   by the Curious server.
    *
-   * @return {{performQuery: function}}
+   * @return {CuriousClient}
    *   A client object with a single performQuery method
    */
-  var CuriousClient = function (curiousURL, request, clientDefaultArgs, quiet, camelCase) {
+  function CuriousClient(curiousURL, request, clientDefaultArgs, quiet, camelCase) {
     return {
       /**
        * Perform a Curious query and return back parsed objects.
@@ -1401,45 +1411,45 @@
        *
        * @memberof module:curious.CuriousClient
        *
-       * @param {string} q
+       * @param {!string} q
        *   The query string
-       * @param {Array<string>} relationships
+       * @param {!Array<string>} relationships
        *   The names of relationships between each joined set of objects
-       * @param {Array<?function(Object)>} constructors
+       * @param {?Array<?function(Object)>} constructors
        *   An array of constructors for any custom classes, or null for the
        *   default
-       * @param {Object} params
+       * @param {?Object=} params
        *   Query-specific parameters for the request
-       * @param {boolean} [params.x]
+       * @param {boolean=} params.x
        *   Whether or not to ignore excludes; defaults to false
-       * @param {boolean} [params.c]
+       * @param {boolean=} params.c
        *   Whether or not to just do a check of the query syntax; defaults to
        *   false
-       * @param {boolean} [params.d]
+       * @param {boolean=} params.d
        *   Whether or not return the object data, or just return ids; always
        *   forced to be true for the JavaScript client
-       * @param {boolean} [params.fk]
+       * @param {boolean=} params.fk
        *   Whether or not follow foreign keys: if false, foregin keys will be
        *   IDs, as expecte. If true, foreign keys will be 4-member arrays
        *   that include the ID, name, and URL of the object being pointed to.
        *   Defaults to false.
-       * @param {boolean} [params.r]
+       * @param {boolean=} params.r
        *   If true, force a refresh of the data not from cache; defaults to
        *   false.
-       * @param {boolean} [params.fc]
+       * @param {boolean=} params.fc
        *   If true, force using the cached data; defaults to false.
-       * @param {string} [params.app]
+       * @param {string=} params.app
        *   If provided, the name of the app, to use for cache key construction.
-       * @param {Array<Array<Object>>} existingObjects
+       * @param {Array<Array<Object>>=} existingObjects
        *   Objects that already exist to be linked into the results returned by
        *   this query
        *
-       * @return {Promise<{objects: Array, trees: Array}>}
+       * @return {Promise<{objects: Array, trees: Array<?Object>}>}
        *   A promise that resolves to an object containing the objects requested by the query
        *   and a tree structure that relates IDs for recursive queries
        *
        */
-      performQuery: function (q, relationships, constructors, params, existingObjects) {
+      performQuery: function performQuery(q, relationships, constructors, params, existingObjects) {
         var args;
         var groupedExistingObjects;
 
@@ -1473,14 +1483,15 @@
           });
       },
     };
-  };
+  }
 
   /**
    * Common code of convenience functions that make it easier to interact
-   * with a variety of http clients
+   * with a variety of http clients: used to set a default module name if one
+   * is not provided for the wrapper.
    *
    * @example
-   * var axiosWrapper = _dataUnwrapper.bind(this, 'axios');
+   * var axiosWrapper = _unwrapResponseData.bind(this, 'axios');
    *
    * @private
    * @memberof module:curious.CuriousClient.wrappers
@@ -1488,10 +1499,10 @@
    * @param {string} defaultModuleName
    *   The default module object name to use if one is not provided--should
    *   be bound to a string when actually used as a wrapper.
-   * @param {?Object} moduleObjectOrFunction
+   * @param {?Object=} moduleObjectOrFunction
    *   Either the module to use, like <code>axios</code>/<code>$http</code>, or the posting function
    *   itself, like <code>axios.post</code>.
-   * @param {?Object} options
+   * @param {?Object=} options
    *   Additional options to send to the requesting function
    *
    * @return {function(string, Object): Promise}
@@ -1530,7 +1541,7 @@
     // axios/angular return the server's response nested within an object
     // (response.data); here we return a tiny filter function to pull that
     // server response out
-    return function (url, args) {
+    return function _postRequestWrapper(url, args) {
       return postRequestFunction(url, args, options || {})
         .then(function (response) {
           return response.data;
@@ -1575,7 +1586,7 @@
    *  takes the url and arguments, makes an axios post request, and returns
    *  a promise that resolves directly to the returned query response (unwrapped).
    */
-  CuriousClient.wrappers.axios = _unwrapResponseData.bind(ex, 'axios');
+  CuriousClient.wrappers.axios = _unwrapResponseData.bind(this, 'axios');
 
   /**
    * Convenience function to make it easier to interact with AngularJS <code>$http.post</code>
@@ -1599,7 +1610,7 @@
    *  takes the url and arguments, makes a <code>POST</code> request and returns
    *  a promise that resolves directly to the returned query response (unwrapped)
    */
-  CuriousClient.wrappers.angular = _unwrapResponseData.bind(ex, '$http');
+  CuriousClient.wrappers.angular = _unwrapResponseData.bind(this, '$http');
 
   /**
    * Convenience function to make it easier to interact with Polymer's
@@ -1610,18 +1621,18 @@
    *
    * @memberof module:curious.CuriousClient.wrappers
    *
-   * @param {PolymerElement} ironAjaxElement
+   * @param {!PolymerElement} ironAjaxElement
    *   The <code>iron-ajax</code> element being used to make the request
    * @param {?Object} options
    *   Additional options to send to the requesting function
    *
-   * @return {function(string, Object): Promise}
+   * @return {function(string, Object=): Promise}
    *  A function that meets the requirements to make requests in the curious client:
    *  takes the url and arguments, makes a <code>POST</code> request with
    *  <code>ironAjaxElement</code>, and returns a promise that resolves
    *  directly to the returned query response (unwrapped)
    */
-  CuriousClient.wrappers.ironAjax = function (ironAjaxElement, options) {
+  CuriousClient.wrappers.ironAjax = function ironAjax(ironAjaxElement, options) {
     return function (url, args) {
       var oldAutoValue;
       var request;
@@ -1655,10 +1666,10 @@
     };
   };
 
-  ex.CuriousObjects = CuriousObjects;
-  ex.CuriousClient = CuriousClient;
-  ex.CuriousQuery = CuriousQuery;
+  exports.CuriousObjects = CuriousObjects;
+  exports.CuriousClient = CuriousClient;
+  exports.CuriousQuery = CuriousQuery;
 
-  return ex;
-})();
+  return exports;
+});
 // vim: sw=2 ts=2 sts=2 et
