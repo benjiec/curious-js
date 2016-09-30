@@ -1,0 +1,10 @@
+version: '2'
+services:
+  curious-js:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./curious.js:/usr/src/curious-js/curious.js
+      - ./scripts:/usr/src/curious-js/scripts
+      - ./tests:/usr/src/curious-js/tests

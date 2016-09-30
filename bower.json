@@ -27,7 +27,9 @@
     "scripts",
     "tests",
     "package.json",
-    "**/.*"
+    "**/.*",
+    "Dockerfile",
+    "docker-compose.yml"
   ],
   "main": "./curious.js",
   "dependencies": {

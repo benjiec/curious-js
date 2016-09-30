@@ -25,7 +25,9 @@
   "license": "MIT",
   "ignore": [
     "bower.json",
-    "**/.*"
+    "**/.*",
+    "Dockerfile",
+    "docker-compose.yml"
   ],
   "main": "./curious.js",
   "scripts": {
