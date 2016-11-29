@@ -649,7 +649,7 @@
       } else if (thenPair.length > 1 && thenPair[1]) {
         // If the first callback is null but the second one isn't, we're looking at a catch
         // situation. We use the same data structure to store both situations, so that they're
-        // attached to the proise in the same order they were attached to the Query object
+        // attached to the promise in the same order they were attached to the Query object
         promise = promise.catch(thenPair[1]);
       }
     });
