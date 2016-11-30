@@ -1,4 +1,6 @@
-#!/bin/bash -e -x
+#!/bin/bash
+set -e
+set -x
 
 # make_doc - generate JSDoc for the project
 
