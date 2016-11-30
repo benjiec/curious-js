@@ -23,6 +23,57 @@
       srv.close(done);
     });
 
+    describe('#queryUrl', function () {
+      function _queryUrl(baseUrl) { return new curious.CuriousClient(baseUrl).queryUrl; }
+
+      it('should add "/q/" to url paths', function () {
+        expect(_queryUrl('foobar.com/curious')).to.equal('foobar.com/curious/q/');
+        expect(_queryUrl('foobar.com/curious/')).to.equal('foobar.com/curious/q/');
+      });
+
+      it('should add "/q/" to server urls', function () {
+        expect(_queryUrl('curious.foobar.com')).to.equal('curious.foobar.com/q/');
+        expect(_queryUrl('curious.foobar.com/')).to.equal('curious.foobar.com/q/');
+      });
+
+      it('should add "/q/" to local urls', function () {
+        expect(_queryUrl('curious/')).to.equal('curious/q/');
+        expect(_queryUrl('curious')).to.equal('curious/q/');
+        expect(_queryUrl('/curious/')).to.equal('/curious/q/');
+        expect(_queryUrl('/curious')).to.equal('/curious/q/');
+      });
+
+      it('should add "/q/" to empty urls', function () {
+        expect(_queryUrl('')).to.equal('/q/');
+        expect(_queryUrl('/')).to.equal('/q/');
+        expect(_queryUrl('//')).to.equal('//q/');
+      });
+
+      it('should not add extra "/q/"s to url paths', function () {
+        expect(_queryUrl('foobar.com/curious/q')).to.equal('foobar.com/curious/q/');
+        expect(_queryUrl('foobar.com/curious/q/')).to.equal('foobar.com/curious/q/');
+      });
+
+      it('should not add extra "/q/"s to server urls', function () {
+        expect(_queryUrl('curious.foobar.com/q')).to.equal('curious.foobar.com/q/');
+        expect(_queryUrl('curious.foobar.com/q/')).to.equal('curious.foobar.com/q/');
+      });
+
+      it('should not add extra "/q/"s to local urls', function () {
+        expect(_queryUrl('curious/')).to.equal('curious/q/');
+        expect(_queryUrl('curious')).to.equal('curious/q/');
+        expect(_queryUrl('/curious/')).to.equal('/curious/q/');
+        expect(_queryUrl('/curious')).to.equal('/curious/q/');
+      });
+
+      it('should not add extra "/q/" to "q" urls', function () {
+        expect(_queryUrl('/q')).to.equal('/q/');
+        expect(_queryUrl('/q/')).to.equal('/q/');
+        expect(_queryUrl('//q')).to.equal('//q/');
+        expect(_queryUrl('//q/')).to.equal('//q/');
+      });
+    });
+
     describe('#performQuery', function () {
       it('should work with axios', function (done) {
         var requestFunctions;

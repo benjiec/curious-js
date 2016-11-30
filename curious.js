@@ -4,13 +4,13 @@
  *
  * @module curious
  */
-(function (global, factory) {
+(function _umd(global, factory) {
   // UMD Format for exports. Works with all module systems: AMD/RequireJS, CommonJS, and global
   var mod;
 
   // AMD
   if (typeof define === 'function' && define.amd) {
-    define(['exports'], factory);
+    define('curious', ['exports'], factory);
   } else if (typeof exports !== 'undefined') {
     factory(exports);
   } else {
@@ -1320,13 +1320,42 @@
   }
 
   /**
+   * Determine the query endpoint URL from the base URL: add in the query endpoint '/q/' if the URL
+   * does not already include it, and make sure the URL ends in a '/'.
+   *
+   * @param {string} url The base URL, maybe also including the query endpoint
+   *
+   * @return {string} The fully formed query URL, ending in a '/'.
+   */
+  function _getQueryUrl(url) {
+    var queryUrl = url;
+
+    // Ensure that we end with a '/'
+    if (!queryUrl.endsWith('/')) {
+      queryUrl += '/';
+    }
+
+    // Ensure that if the last component was not '/q/', it is now;
+    if (!queryUrl.endsWith('/q/')) {
+      queryUrl += 'q/';
+    }
+
+    return queryUrl;
+  }
+
+
+  /**
    * Tool for making a curious query and returning parsed objects
    *
    * @class
    * @alias module:curious.CuriousClient
    *
-   * @param {!string} curiousURL
-   *   The URL of the Curious server
+   * @param {!string} curiousUrl
+   *   <p>The URL of the Curious server. The query is sent to <code>curiousUrl + '/q/'</code>.</p>
+   *
+   *   <p>XXX: For compatability with legacy clients, the <code>/q/</code> is not added if
+   *   <code>curiousUrl</code> has a 'q' as its last path element. However, <em>new code should not
+   *   rely on this behavior</em>.</p>
    * @param {function (string, Object): Promise} request
    *   <p>A function that makes a <code>POST</code> request and returns a Promise
    *   (a thenable)--examples are <code>jQuery.post</code>,
@@ -1350,8 +1379,11 @@
    * @return {CuriousClient}
    *   A client object with a single performQuery method
    */
-  function CuriousClient(curiousURL, request, clientDefaultArgs, quiet, camelCase) {
+  function CuriousClient(curiousUrl, request, clientDefaultArgs, quiet, camelCase) {
     return {
+      /** The URL to query */
+      queryUrl: _getQueryUrl(curiousUrl),
+
       /**
        * Perform a Curious query and return back parsed objects.
        *
@@ -1466,7 +1498,7 @@
         args = _getArgs(params, clientDefaultArgs);
         args.q = q.replace('\n', ' ');
 
-        return request(curiousURL, args)
+        return request(this.queryUrl, args)
           .then(function (response) {
             var parsedResult = CuriousObjects.parse(
               relationships,
