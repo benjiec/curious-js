@@ -9,7 +9,7 @@
   var examples = require('./examples.js');
 
   var PORT = 8080;
-  var CURIOUS_URL = 'http://localhost:' + PORT;
+  var URL = 'http://localhost:' + PORT;
 
   function start(cb) {
     var server;
@@ -28,7 +28,7 @@
   }
 
   module.exports = {
-    url: CURIOUS_URL,
+    url: URL,
     start: start,
   };
 

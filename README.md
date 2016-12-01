@@ -1,6 +1,6 @@
 # curious-js
 
-JavaScript consumer code for Curious APIs.
+JavaScript consumer code for Curious APIs. [![Build Status](https://travis-ci.org/ginkgobioworks/curious-js.svg?branch=v2)](https://travis-ci.org/ginkgobioworks/curious-js)
 
 ## Usage
 
@@ -20,23 +20,33 @@ default name `curious`) in whatever system you are using.
 There are two main parts to using Curious from Javascript: `CuriousClient`,
 and `CuriousQuery`.
 
-First, create an instance of `CuriousClient` that points to your Curious server. You are responsible
-for picking and using a request method that works for you. `CuriousClient` provides some convenience
-wrappers, but you can make any asynchronous transport layer work by passing a custom function as the
-second parameter to the client constructor. Note that if you're using jQuery, `jQuery.post` does not
-require any wrapping and can be passed as the second parameter directly.
+First, create an instance of `CuriousClient` that points to your Curious server, providing a
+server URL and a request function.
+
+_The server URL provided to the client should point to the Curious root endpoint, **not** to the
+query endpoint (`/q/`)on the server_. The code will not break if you make this mistake, but the
+behavior is deprecated.
+
+You must also provide a request method. You are responsible for picking and using a request
+method/transport layer that works for you. `CuriousClient` provides convenience wrappers for
+common request methods, but you can make any asynchronous transport layer work by passing a custom
+function as the second parameter to the client constructor. The function must take the URL as its
+first parameter and an object payload as its second parameter, make a `POST` request to the curious
+server, and return a Promise (or any thenable) that resolves to the JSON data returned by the
+server. Note that if you're using jQuery, `jQuery.post` does not require any wrapping and can be
+passed as the second parameter directly.
 
 ```javascript
-// example using Axios
+// Example using Axios
 var curiousClient = new curious.CuriousClient(CURIOUS_URL, curious.CuriousClient.wrappers.axios(axios), ...);
 
-// example using a custom request method
+// Example using a custom request method
 var curiousClient = new curious.CuriousClient(CURIOUS_URL, function (url, data) {
   return new Promise(function (resolve, reject) {
     var result;
     var error;
 
-    // perform some asynchronous access
+    // Perform some asynchronous access
 
     if (error) {
       reject(error);
@@ -50,7 +60,7 @@ var curiousClient = new curious.CuriousClient(CURIOUS_URL, function (url, data) 
 Then, construct a `CuriousQuery` and perform it on the server using the client. Attach any callbacks
 to the Promise object returned by the `perform` method, or directly to the query object. They will
 be executed in the order they were attached, before any callbacks attached later. The results of the
-query will be passed to the callback.
+query will be passed to the first callback.
 
 Here's a trivial example. The results, of course, depend on the schema on the Curious server; the
 example uses a made up schema consiting of Document and Section entities in a 1:many relationship.
@@ -229,14 +239,37 @@ CuriousObject {
        sections: [Object] } ] }
 ```
 
-The API is explained in detail in  the documentation.
+The API is explained in detail in the documentation.
 
 ## Development
 
-This project provides a basic Dockerfile that builds a Docker container capable of running unit
-tests. To run the tests, bring up the container with `docker-compose up`.
+Development is carried out through an included Docker environment.
+
+### Docker
+
+The project provides a Dockerfile that builds a container capable of running the unit tests and
+scripts. To run the tests, bring up the container with `docker-compose up`. Any of the scripts shown
+to be run below from a shell with `npm run` can be executed in an instance of the container with
+`docker-compose run --rm [script name]`.
+
+### REPL
+
+A script that opens up a node.js REPL and loads curious.js as `curious` is provided with
+`npm run repl`.
 
 ### Test framework
 
 The tests are written in [mocha](https://mochajs.org/), with [chai](http://chaijs.com/) expect-style
-assertions.
+assertions. Tests can be run with `npm test`.
+
+Coding conventions and linting are enforced at the unit test level, but can also be run
+independently with `npm run lint`.
+
+### Documentation
+
+Any new code added to `curious.js` must be documented in a manner consistent with existing
+documentation.
+
+JSDoc documentation can be generated into the `doc/` subdirectory from the source code and README
+with `npm run make_doc`. It can be updated on the project website automatically with `npm run
+release_doc`.
