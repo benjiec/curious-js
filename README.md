@@ -1,8 +1,6 @@
 # curious-js
 
-JavaScript consumer code for Curious APIs.
-
-[![Build Status](https://travis-ci.org/ginkgobioworks/curious-js.svg?branch=master)](https://travis-ci.org/ginkgobioworks/curious-js)
+JavaScript consumer code for Curious APIs. [![Build Status](https://travis-ci.org/ginkgobioworks/curious-js.svg?branch=v2)](https://travis-ci.org/ginkgobioworks/curious-js)
 
 ## Usage
 
