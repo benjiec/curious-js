@@ -1568,7 +1568,7 @@
     // If the module provided has a `post` method, use that. Otherwise,
     // just call the "module" itself: this allows passing in either
     // $http or $http.post, for example
-    postRequestFunction = mod.post || mod;
+    postRequestFunction = mod.post ? mod.post.bind(mod) : mod;
 
     // axios/angular return the server's response nested within an object
     // (response.data); here we return a tiny filter function to pull that
