@@ -21,7 +21,7 @@
   ],
   "homepage": "http://ginkgobioworks.github.io/curious-js",
   "bugs": "https://github.com/ginkgobioworks/curious-js/issues",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "license": "MIT",
   "ignore": [
     "bower.json",
