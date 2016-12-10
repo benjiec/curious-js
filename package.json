@@ -25,12 +25,14 @@
   "license": "MIT",
   "main": "./curious.js",
   "scripts": {
-    "lint": "./scripts/lint",
+    "test": "mocha tests",
+    "prepublish": "npm run make_doc",
+    "postpublish": "npm run release_doc",
+
+    "lint": "eslint curious.js tests && echo OK",
     "make_doc": "./scripts/make_doc",
-    "prepublish": "./scripts/make_doc",
     "release_doc": "./scripts/release_doc",
-    "repl": "./scripts/repl",
-    "test": "./scripts/run_tests"
+    "repl": "./scripts/repl"
   },
   "dependencies": {},
   "devDependencies": {
