@@ -1,7 +1,15 @@
 language: node_js
 node_js:
-    - node
-
+- node
 cache:
-    directories:
-        - node_modules
+  directories:
+  - node_modules
+deploy:
+  provider: npm
+  email: misha@ginkgobioworks.com
+  api_key:
+    secure: RaHu9nAQUkPyp6LZ2mEvD5zbdXeHIZrP20iTT4N5kl3kB8BmXQBVphJ4rkcmdRYT13JZIlXzIvqWE8QdK+PmapOIWaGJ4t5XQ0Hjrqm5iUutDzvkypKBl6R44SlhIAp4KwWbEHeDkVZnhHZFirhgJMADbROBvBxTYAORab2zMmWWP1QbtLNjZ0RA1GPfM4KA+XVQsNwKTvlVZDQN8pptVsxfLI+MpDkGiZbq2zs0m5MUzMRVit2yN+HbSKCZRNU46cVFkA0SaDKTShHbydFvFLCgIQrOei+GzLu0PQXyjFLyz+lgkEdRgEp6bjC+ZrpU3vDKMnzo0pucpa8LTfUFxua/OLV6MVBcjB6/BeifMyd9R9yDfZcxlePSwyiiwWdR79bWnQckrN+jf5RaUk03GVmn6oo2zXK8kFZKIQw9rYfBKyisN5I9apqEyOmGQU7Uk6oqcUU8rYAsSp+8FQ9pcPXd2PXj9HkjzakGPWutHlb+5EKRy2pjX/G2EuJUhVzs4f3TPuAEfNnG/mz5TaMU7T1XpaZ0NQ5yTgr0NRNt2lgLV5Zej6sqkE3evMEGwtC1GSkbWO3kaigBVDi3Ys09fOUzRBZebaO63exzwqVKA15D4gAsaNoReh9eelhOix4PYvlnb4huxgy1Jf5SuNSjHblAm8I2UoTAl4MRle940fQ=
+  on:
+    tags: true
+    repo: ginkgobioworks/curious-js
+    branch: v2
