@@ -21,14 +21,13 @@
   ],
   "homepage": "http://ginkgobioworks.github.io/curious-js",
   "bugs": "https://github.com/ginkgobioworks/curious-js/issues",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "license": "MIT",
   "main": "./curious.js",
   "scripts": {
     "test": "mocha tests",
     "prepublish": "npm run make_doc",
     "postpublish": "npm run release_doc",
-
     "lint": "eslint curious.js tests && echo OK",
     "make_doc": "./scripts/make_doc",
     "release_doc": "./scripts/release_doc",
