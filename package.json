@@ -23,12 +23,6 @@
   "bugs": "https://github.com/ginkgobioworks/curious-js/issues",
   "version": "2.4.1",
   "license": "MIT",
-  "ignore": [
-    "bower.json",
-    "**/.*",
-    "Dockerfile",
-    "docker-compose.yml"
-  ],
   "main": "./curious.js",
   "scripts": {
     "lint": "./scripts/lint",

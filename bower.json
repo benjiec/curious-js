@@ -22,13 +22,13 @@
   "homepage": "http://ginkgobioworks.github.io/curious-js",
   "license": "MIT",
   "ignore": [
-    "doc",
-    "scripts",
-    "tests",
-    "package.json",
-    "**/.*",
+    ".*",
     "Dockerfile",
-    "docker-compose.yml"
+    "doc",
+    "docker-compose.yml",
+    "package.json",
+    "scripts",
+    "tests"
   ],
   "main": "./curious.js",
   "dependencies": {
