@@ -247,15 +247,28 @@ The API is explained in detail in the documentation.
 
 Development is carried out through an included Docker environment and Travis CI.
 
-### CI
+
+### Gotchas
+
+For historic reasons, since some repos still need to use Curious v 1.0, the `master` branch still
+points there, and the current version, the _default_ branch, points to `v2`. Eventually this will be
+resolved.
+
+### CI build and deployment
 
 Continuous integration is performed with [Travis CI](https://travis-ci.org/ginkgobioworks/curious-js).
-Any tagged commits on the main branch (v2), which update bower by default, are also automatically
-deployed to NPM.
+Any tagged commits on the main branch (v2), update bower by default and are automatically deployed to
+NPM through the CI `deploy` task.
+
+To deploy the code:
+
+1. Get on the default branch `git checkout v2` [*not master*]
+2. Bump the version: `npm version [type]`
+3. Push to the origin with tags: `git push && git push --tags`
 
 ### Docker
 
-The project provides a Dockerfile that builds a container capable of running the unit tests and
+The project also provides a Dockerfile that builds a container capable of running the unit tests and
 scripts. To run the tests, bring up the container with `docker-compose up`. Any of the scripts shown
 to be run below from a shell with `npm run` can be executed in an instance of the container with
 `docker-compose run --rm [script name]`.
