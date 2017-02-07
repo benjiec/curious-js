@@ -9,6 +9,7 @@
   var curious = require('../curious.js');
   var examples = require('./examples.js');
   var server = require('./server.js');
+  var Promise = require('es6-promise');
 
   // TESTS
 
@@ -75,6 +76,41 @@
     });
 
     describe('#performQuery', function () {
+      it('should remove all line breaks', function () {
+        // Encapsulate logic for testing query processing
+        function testQueryString(original, expected) {
+          // Fake request function that tests whether or not the arguments are what we expect
+          function fakeRequest(url, args) {
+            expect(args.q).to.equal(expected);
+
+            // Must resolve to an object with a 'result' property to prevent errors in parsing
+            return Promise.resolve({ result: args });
+          }
+
+          return new curious.CuriousClient(server.url, fakeRequest, null, true).performQuery(original);
+        }
+
+        return Promise.all([
+          testQueryString('no breaks', 'no breaks'),
+          testQueryString(
+            'break\nin the middle',
+            'break in the middle'
+          ),
+          testQueryString(
+            'multiple\nbreaks\nin the middle',
+            'multiple breaks in the middle'
+          ),
+          testQueryString(
+            '\nmultiple\nbreaks\nin the middle and edges\n',
+            ' multiple breaks in the middle and edges '
+          ),
+          testQueryString(
+            'multiple\nbreaks\n\nin a row',
+            'multiple breaks in a row'
+          ),
+        ]);
+      });
+
       it('should work with axios', function (done) {
         var requestFunctions;
         // Set the global axios variable to test axios wrapper defaults
