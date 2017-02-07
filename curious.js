@@ -1503,7 +1503,7 @@
         }
 
         args = _getArgs(params, clientDefaultArgs);
-        args.q = q.replace(/\n+/g, ' ');
+        args.q = q.replace(/\n+/g, ' ').trim();
 
         return request(this.queryUrl, args)
           .then(function (response) {

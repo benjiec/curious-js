@@ -76,7 +76,7 @@
     });
 
     describe('#performQuery', function () {
-      it('should remove all line breaks', function () {
+      it('should remove all line breaks and extra whitespace', function () {
         // Encapsulate logic for testing query processing
         function testQueryString(original, expected) {
           // Fake request function that tests whether or not the arguments are what we expect
@@ -102,11 +102,23 @@
           ),
           testQueryString(
             '\nmultiple\nbreaks\nin the middle and edges\n',
-            ' multiple breaks in the middle and edges '
+            'multiple breaks in the middle and edges'
           ),
           testQueryString(
             'multiple\nbreaks\n\nin a row',
             'multiple breaks in a row'
+          ),
+          testQueryString(
+            '   extra space at the start',
+            'extra space at the start'
+          ),
+          testQueryString(
+            'extra space at the end    ',
+            'extra space at the end'
+          ),
+          testQueryString(
+            '   extra space at the start and end   ',
+            'extra space at the start and end'
           ),
         ]);
       });
