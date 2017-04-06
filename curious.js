@@ -2,7 +2,7 @@
 /**
  * curious.js - JavaScript consumer code for Curious APIs.
  *
- * Copyright (c) 2015 Ginkgo BIoworks, Inc.
+ * Copyright (c) 2015 Ginkgo Bioworks, Inc.
  * @license MIT
  */
 (function _umd(global, factory) {
@@ -11,7 +11,7 @@
 
   // AMD
   if (typeof define === 'function' && define.amd) {
-    define('curious', ['exports'], factory);
+    define(['exports'], factory);
   } else if (typeof exports !== 'undefined') {
     factory(exports);
   } else {
