@@ -48,11 +48,11 @@
     "es6-promise": "^4.0.5",
     "eslint-config-airbnb-es5": "^1.1.0",
     "eslint-plugin-react": "^6.7.1",
-    "jsdoc": "~3.3.0",
+    "jsdoc": "~3.5.4",
     "mocha": "~2.2.5",
     "mocha-eslint": "^3.0.1",
     "rimraf": "^2.6.1",
-    "rollup": "^0.47.2"
+    "rollup": "^0.47.4"
   },
   "engines": {
     "node": ">=0.10.0"
