@@ -35,14 +35,14 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "axios": "~0.5.4",
-    "babel-eslint": "^7.1.1",
-    "chai": "~2.3.0",
-    "es6-promise": "^4.0.5",
-    "eslint-config-airbnb-es5": "^1.1.0",
-    "eslint-plugin-react": "^6.7.1",
-    "jsdoc": "~3.3.0",
-    "mocha": "~2.2.5",
+    "axios": "^0.5.4",
+    "babel-eslint": "^7.2.3",
+    "chai": "^2.3.0",
+    "es6-promise": "^4.1.1",
+    "eslint-config-airbnb-es5": "^1.2.0",
+    "eslint-plugin-react": "^6.10.3",
+    "jsdoc": "^3.5.5",
+    "mocha": "^2.5.3",
     "mocha-eslint": "^3.0.1"
   },
   "engines": {
