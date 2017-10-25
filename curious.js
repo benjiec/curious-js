@@ -526,8 +526,6 @@
   /**
    * Add an outer-join term to this query.
    *
-   * @method with
-   *
    * @param {!string} termString
    *   The contents of the starting term
    * @param {!string} relationship
@@ -692,8 +690,6 @@
    *
    * This can be useful for constructing a query object with known error-handling before
    * actually executing it.
-   *
-   * @method catch
    *
    * @param {function} rejected
    *   A function to call when the promise is rejected (just like you would pass to
