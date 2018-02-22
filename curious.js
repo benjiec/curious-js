@@ -5,24 +5,7 @@
  * Copyright (c) 2015 Ginkgo Bioworks, Inc.
  * @license MIT
  */
-(function _umd(global, factory) {
-  // UMD Format for exports. Works with all module systems: AMD/RequireJS, CommonJS, and global
-  var mod;
 
-  // AMD
-  if (typeof define === 'function' && define.amd) {
-    define(['exports'], factory);
-  } else if (typeof exports !== 'undefined') {
-    factory(exports);
-  } else {
-    mod = {
-      exports: {},
-    };
-
-    factory(mod.exports);
-    global.curious = mod.exports;
-  }
-})(this, function _curiousUmdFactory(exports) {
   /**
    * Curious JavaScript client and query construction
    *
@@ -1701,10 +1684,6 @@
     };
   };
 
-  exports.CuriousObjects = CuriousObjects;
-  exports.CuriousClient = CuriousClient;
-  exports.CuriousQuery = CuriousQuery;
+  export { CuriousObjects, CuriousClient, CuriousQuery };
 
-  return exports;
-});
 // vim: sw=2 ts=2 sts=2 et
