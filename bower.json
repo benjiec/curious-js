@@ -30,7 +30,7 @@
     "scripts",
     "tests"
   ],
-  "main": "./curious.js",
+  "main": "dist/curious.umd.js",
   "dependencies": {
   },
   "devDependencies": {

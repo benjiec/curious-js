@@ -8,15 +8,22 @@ JavaScript consumer code for Curious APIs.
 
 ### Installation
 
-`curious-js` is available both from [bower](https://bower.io/search/?q=curious-js) and from
-[npm](https://www.npmjs.com/package/curious-js).
+`curious-js` is available from [npm](https://www.npmjs.com/package/curious-js):
+
+```
+npm install --save curious-js
+```
+
+If you're not using npm as a package manager, curious-js is also available in a
+UMD build at [unpkg](https://unpkg.com/curious-js) that you can use in a
+`<script>` tag in the browser, or install with bower. The UMD build makes
+`curious` available as a `window.curious` global variable.
 
 ### Importing
 
-`curious-js` has been written using the [UMD](https://github.com/umdjs/umd) module pattern. This
-pattern should be compatible with AMD/require.js, CommonJS/node.js, direct loading in the browser,
-and Babel module variants. Requiring or loading the `curious.js` file will create a module (with the
-default name `curious`) in whatever system you are using.
+`curious-js` is bundled with [rollup.js](https://rollupjs.org) for
+compatibility with AMD/require.js, CommonJS/node.js, direct loading in the
+browser, and ES6 module variants.
 
 ### Using
 
