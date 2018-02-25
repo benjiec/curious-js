@@ -16,8 +16,8 @@ npm install --save curious-js
 
 If you're not using npm as a package manager, curious-js is also available in a
 UMD build at [unpkg](https://unpkg.com/curious-js) that you can use in a
-`<script>` tag in the browser, or install with bower. The UMD build makes
-`curious` available as a `window.curious` global variable.
+`<script>` tag in the browser. The UMD build makes `curious` available as a
+`window.curious` global variable.
 
 ### Importing
 
@@ -264,8 +264,8 @@ resolved.
 ### CI build and deployment
 
 Continuous integration is performed with [Travis CI](https://travis-ci.org/ginkgobioworks/curious-js).
-Any tagged commits on the main branch (v2), update bower by default and are automatically deployed to
-NPM through the CI `deploy` task.
+Any tagged commits on the main branch (v2) are automatically deployed to NPM through the CI `deploy`
+task.
 
 To deploy the code:
 
