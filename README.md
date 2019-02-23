@@ -2,21 +2,30 @@
 
 JavaScript consumer code for Curious APIs.
 
-[![Build Status](https://travis-ci.org/ginkgobioworks/curious-js.svg?branch=v2)](https://travis-ci.org/ginkgobioworks/curious-js)
+[![Build Status](https://travis-ci.org/ginkgobioworks/curious-js.svg?branch=master)](https://travis-ci.org/ginkgobioworks/curious-js)
+
+v1 is available under the [v1 branch](https://github.com/ginkgobioworks/curious-js/tree/v1)
 
 ## Usage
 
 ### Installation
 
-`curious-js` is available both from [bower](https://bower.io/search/?q=curious-js) and from
-[npm](https://www.npmjs.com/package/curious-js).
+`curious-js` is available from [npm](https://www.npmjs.com/package/curious-js):
+
+```
+npm install --save curious-js
+```
+
+If you're not using npm as a package manager, curious-js is also available in a
+UMD build at [unpkg](https://unpkg.com/curious-js) that you can use in a
+`<script>` tag in the browser. The UMD build makes `curious` available as a
+`window.curious` global variable.
 
 ### Importing
 
-`curious-js` has been written using the [UMD](https://github.com/umdjs/umd) module pattern. This
-pattern should be compatible with AMD/require.js, CommonJS/node.js, direct loading in the browser,
-and Babel module variants. Requiring or loading the `curious.js` file will create a module (with the
-default name `curious`) in whatever system you are using.
+`curious-js` is bundled with [rollup.js](https://rollupjs.org) for
+compatibility with AMD/require.js, CommonJS/node.js, direct loading in the
+browser, and ES6 module variants.
 
 ### Using
 
@@ -248,21 +257,15 @@ The API is explained in detail in the documentation.
 Development is carried out through an included Docker environment and Travis CI.
 
 
-### Gotchas
-
-For historic reasons, since some repos still need to use Curious v 1.0, the `master` branch still
-points there, and the current version, the _default_ branch, points to `v2`. Eventually this will be
-resolved.
-
 ### CI build and deployment
 
 Continuous integration is performed with [Travis CI](https://travis-ci.org/ginkgobioworks/curious-js).
-Any tagged commits on the main branch (v2), update bower by default and are automatically deployed to
-NPM through the CI `deploy` task.
+Any tagged commits on the master branch are automatically deployed to NPM through the CI `deploy`
+task.
 
 To deploy the code:
 
-1. Get on the default branch `git checkout v2` [*not master*]
+1. Get on the default branch `git checkout master`
 2. Bump the version: `npm version [type]`
 3. Push to the origin with tags: `git push && git push --tags`
 
