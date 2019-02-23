@@ -25,6 +25,7 @@
   "license": "MIT",
   "main": "dist/curious.cjs.js",
   "module": "dist/curious.esm.js",
+  "browser": "dist/curious.umd.js",
   "unpkg": "dist/curious.umd.js",
   "scripts": {
     "test": "mocha --compilers js:babel-register tests",
