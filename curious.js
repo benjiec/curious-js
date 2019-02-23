@@ -1,4 +1,3 @@
-/* global define */
 /**
  * curious.js - JavaScript consumer code for Curious APIs.
  *
@@ -11,11 +10,6 @@
   *
   * @module curious
   */
-
-'use strict';
-
-// For node.js and CommonJS
-Object.defineProperty(exports, '__esModule', { value: true });
 
 // QUERY TERMS
 
