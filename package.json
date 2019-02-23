@@ -21,7 +21,7 @@
   ],
   "homepage": "http://ginkgobioworks.github.io/curious-js",
   "bugs": "https://github.com/ginkgobioworks/curious-js/issues",
-  "version": "2.4.6",
+  "version": "3.0.0",
   "license": "MIT",
   "main": "dist/curious.cjs.js",
   "module": "dist/curious.esm.js",
