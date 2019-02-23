@@ -13,3 +13,4 @@ deploy:
     tags: true
     repo: ginkgobioworks/curious-js
     branch: master
+  skip_cleanup: true
