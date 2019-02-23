@@ -2,7 +2,9 @@
 
 JavaScript consumer code for Curious APIs.
 
-[![Build Status](https://travis-ci.org/ginkgobioworks/curious-js.svg?branch=v2)](https://travis-ci.org/ginkgobioworks/curious-js)
+[![Build Status](https://travis-ci.org/ginkgobioworks/curious-js.svg?branch=master)](https://travis-ci.org/ginkgobioworks/curious-js)
+
+v1 is available under the [v1 branch](https://github.com/ginkgobioworks/curious-js/tree/v1)
 
 ## Usage
 
@@ -255,21 +257,15 @@ The API is explained in detail in the documentation.
 Development is carried out through an included Docker environment and Travis CI.
 
 
-### Gotchas
-
-For historic reasons, since some repos still need to use Curious v 1.0, the `master` branch still
-points there, and the current version, the _default_ branch, points to `v2`. Eventually this will be
-resolved.
-
 ### CI build and deployment
 
 Continuous integration is performed with [Travis CI](https://travis-ci.org/ginkgobioworks/curious-js).
-Any tagged commits on the main branch (v2) are automatically deployed to NPM through the CI `deploy`
+Any tagged commits on the master branch are automatically deployed to NPM through the CI `deploy`
 task.
 
 To deploy the code:
 
-1. Get on the default branch `git checkout v2` [*not master*]
+1. Get on the default branch `git checkout master`
 2. Bump the version: `npm version [type]`
 3. Push to the origin with tags: `git push && git push --tags`
 
