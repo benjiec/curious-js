@@ -1598,7 +1598,7 @@ CuriousClient.wrappers = {};
   *  takes the url and arguments, makes an axios post request, and returns
   *  a promise that resolves directly to the returned query response (unwrapped).
   */
-CuriousClient.wrappers.axios = _unwrapResponseData.bind(this, 'axios');
+CuriousClient.wrappers.axios = _unwrapResponseData.bind(window || module, 'axios');
 
 /**
   * Convenience function to make it easier to interact with AngularJS <code>$http.post</code>
@@ -1622,7 +1622,7 @@ CuriousClient.wrappers.axios = _unwrapResponseData.bind(this, 'axios');
   *  takes the url and arguments, makes a <code>POST</code> request and returns
   *  a promise that resolves directly to the returned query response (unwrapped)
   */
-CuriousClient.wrappers.angular = _unwrapResponseData.bind(this, '$http');
+CuriousClient.wrappers.angular = _unwrapResponseData.bind(window || module, '$http');
 
 /**
   * Convenience function to make it easier to interact with Polymer's
