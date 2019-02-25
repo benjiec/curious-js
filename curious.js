@@ -1503,7 +1503,7 @@ function CuriousClient(curiousUrl, request, clientDefaultArgs, quiet, camelCase)
   * is not provided for the wrapper.
   *
   * @example
-  * var axiosWrapper = _unwrapResponseData.bind(this, 'axios');
+  * var axiosWrapper = _unwrapResponseData.bind(_defaultContext(), 'axios');
   *
   * @private
   * @memberof module:curious.CuriousClient.wrappers
@@ -1576,6 +1576,16 @@ function _unwrapResponseData(defaultModuleName, moduleObjectOrFunction, options)
   */
 CuriousClient.wrappers = {};
 
+
+/**
+ * A trivial wrapper presenting the current default context without worrying about using a bare
+ * <code>this</code> in the global scope.
+ *
+ * @return {Object} the current default context
+ */
+function _this() { return this; }
+
+
 /**
   * Convenience function to make it easier to interact with axios responses
   * (axios is not required by this module at all.)
@@ -1598,7 +1608,7 @@ CuriousClient.wrappers = {};
   *  takes the url and arguments, makes an axios post request, and returns
   *  a promise that resolves directly to the returned query response (unwrapped).
   */
-CuriousClient.wrappers.axios = _unwrapResponseData.bind(window || module, 'axios');
+CuriousClient.wrappers.axios = _unwrapResponseData.bind(_this(), 'axios');
 
 /**
   * Convenience function to make it easier to interact with AngularJS <code>$http.post</code>
@@ -1622,7 +1632,7 @@ CuriousClient.wrappers.axios = _unwrapResponseData.bind(window || module, 'axios
   *  takes the url and arguments, makes a <code>POST</code> request and returns
   *  a promise that resolves directly to the returned query response (unwrapped)
   */
-CuriousClient.wrappers.angular = _unwrapResponseData.bind(window || module, '$http');
+CuriousClient.wrappers.angular = _unwrapResponseData.bind(_this(), '$http');
 
 /**
   * Convenience function to make it easier to interact with Polymer's
