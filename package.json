@@ -21,7 +21,7 @@
   ],
   "homepage": "http://ginkgobioworks.github.io/curious-js",
   "bugs": "https://github.com/ginkgobioworks/curious-js/issues",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "license": "MIT",
   "main": "dist/curious.cjs.js",
   "module": "dist/curious.esm.js",
@@ -41,19 +41,19 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "axios": "^0.5.4",
+    "axios": "^0.18.1",
     "babel-eslint": "^7.2.3",
-    "babel-preset-env": "^1.6.1",
+    "babel-preset-env": "^1.7.0",
     "babel-register": "^6.26.0",
     "chai": "^2.3.0",
-    "es6-promise": "^4.1.1",
+    "es6-promise": "^4.2.8",
     "eslint-config-airbnb-es5": "^1.2.0",
     "eslint-plugin-react": "^6.10.3",
-    "jsdoc": "^3.5.5",
+    "jsdoc": "^3.6.3",
     "mocha": "^2.5.3",
     "mocha-eslint": "^3.0.1",
-    "rimraf": "^2.6.2",
-    "rollup": "^0.56.2"
+    "rimraf": "^2.7.1",
+    "rollup": "^0.56.5"
   },
   "engines": {
     "node": ">=0.10.0"

@@ -17,6 +17,7 @@ COPY tests ./tests
 
 # Development files
 COPY .eslintrc.yaml .
+COPY .babelrc .
 
 ENTRYPOINT ["npm", "run"]
 CMD ["test"]
