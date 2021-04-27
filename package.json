@@ -21,7 +21,7 @@
   ],
   "homepage": "http://ginkgobioworks.github.io/curious-js",
   "bugs": "https://github.com/ginkgobioworks/curious-js/issues",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "license": "MIT",
   "main": "dist/curious.cjs.js",
   "module": "dist/curious.esm.js",
@@ -41,7 +41,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "axios": "^0.5.4",
+    "axios": "^0.18.1",
     "babel-eslint": "^7.2.3",
     "babel-preset-env": "^1.6.1",
     "babel-register": "^6.26.0",
